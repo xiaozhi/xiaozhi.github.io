@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="fishhook,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CJZ's Blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="在OC中想在hook一个函数，绝对是利用runtime swizzle 方法。但是对于c函数我们应该怎么hook呢？没错，就是利用今天的主角fishhook 使用方法我们以 hook NSlog() 为例 先定义我们自己的 log 函数 与 NSLog 的函数指针 123456void mLog(NSString * format, ...) &amp;#123;    format = [format">
+<meta name="keywords" content="fishhook">
+<meta property="og:type" content="article">
+<meta property="og:title" content="fishhook 原理笔记">
+<meta property="og:url" content="http://yoursite.com/2020/11/20/fishhook/index.html">
+<meta property="og:site_name" content="CJZ&#39;s Blog">
+<meta property="og:description" content="在OC中想在hook一个函数，绝对是利用runtime swizzle 方法。但是对于c函数我们应该怎么hook呢？没错，就是利用今天的主角fishhook 使用方法我们以 hook NSlog() 为例 先定义我们自己的 log 函数 与 NSLog 的函数指针 123456void mLog(NSString * format, ...) &amp;#123;    format = [format">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11074/3E4E5CE8E1784419AA9987A131D32AB1">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11076/FD07B897C3AB4054B8DBCE6A09D97430">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11079/34EF700BA34D4EFBAFFAA07AD2B18E3E">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11081/A26D9FE9259648F9AC3CC5D1AF87C34E">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11084/56B20444852F487B9FEC5E0DCCBD9D9A">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11087/FCFC1F2CA5734559B74D21105AB1C077">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11089/25D8F304A6B94246B9E29435A4BD1A14">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11092/CEFFF74E73734F88B3293D009B413689">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11096/19F11E662F9748CA8E3436BCFC814599">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11098/CD88539E45FF489DABF380BA2AC4BD2A">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11102/F5E0CE7273D9491BBF80EDBF3E9A74E1">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11104/4E29A4C157B74B1BBC123FF7A45B9E30">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11118/FE859280434E41B9B586AAF9D3FF42A6">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11120/E0F65B3221AC4A209900176EC8386012">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11122/62D4609C42D14B088C640625E4C5F3AE">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11125/D0E6EE3AD8A24C978CE929AAAA132E2A">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11131/F2EA10D9D2C44B5795BD2C5F9A9834CE">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11134/390BDA93A84D4804A870194A5C6BA337">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11136/032ECA434D004DBB8D62BC59429FA9F5">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11141/7D700537F35D4A54B4D4B4DFA22DF5B3">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11143/D4B2F03BAE984DD68B4C39294D299B89">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11145/59BC19B3C3764FAF860D87B0E490C739">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11147/BE8A884242424E34987CE975B362F38F">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11149/7B84BD213F1847099B1AA972630B3A59">
+<meta property="og:updated_time" content="2020-11-20T03:48:40.308Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="fishhook 原理笔记">
+<meta name="twitter:description" content="在OC中想在hook一个函数，绝对是利用runtime swizzle 方法。但是对于c函数我们应该怎么hook呢？没错，就是利用今天的主角fishhook 使用方法我们以 hook NSlog() 为例 先定义我们自己的 log 函数 与 NSLog 的函数指针 123456void mLog(NSString * format, ...) &amp;#123;    format = [format">
+<meta name="twitter:image" content="http://note.youdao.com/yws/res/11074/3E4E5CE8E1784419AA9987A131D32AB1">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/11/20/fishhook/">
+
+
+
+
+
+  <title>fishhook 原理笔记 | CJZ's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CJZ's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">回忆昨天，珍惜今天，期待明天</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/20/fishhook/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ChenJz">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CJZ's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">fishhook 原理笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-20T11:36:55+08:00">
+                2020-11-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在OC中想在hook一个函数，绝对是利用runtime swizzle 方法。但是对于c函数我们应该怎么hook呢？<br>没错，就是利用今天的主角fishhook</p>
+<h3 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h3><p>我们以 hook <code>NSlog()</code> 为例</p>
+<p>先定义我们自己的 <code>log</code> 函数 与 <code>NSLog</code> 的函数指针</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void <span class="keyword">mLog</span>(NSString * <span class="keyword">format</span>, ...) &#123;</span><br><span class="line">    <span class="keyword">format</span> = [<span class="keyword">format</span> stringByAppendingFormat:@<span class="string">"勾上了！\n"</span>];</span><br><span class="line">    sys_nslog(<span class="keyword">format</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void(*sys_nslog)(NSString * <span class="keyword">format</span>, ...);</span><br></pre></td></tr></table></figure>
+<p>声明 <code>rebinding</code> 的结构体。这个结构体包含了重新绑定的信息。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">rebinding</span> <span class="title">nslog</span>;</span></span><br><span class="line">nslog.name = <span class="string">"NSLog"</span>;</span><br><span class="line">nslog.replacement = mLog;</span><br><span class="line">nslog.replaced = (<span class="keyword">void</span> *)&amp;sys_nslog;</span><br><span class="line"><span class="comment">//rebinding结构体数组</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">rebinding</span> <span class="title">rebs</span>[1] = &#123;</span>nslog&#125;;</span><br><span class="line"></span><br><span class="line">rebind_symbols(rebs, <span class="number">1</span>);</span><br></pre></td></tr></table></figure></p>
+<p>最终我们调用 <code>NSLog</code>方法，打印如下：</p>
+<blockquote>
+<p> xxx 勾上了！</p>
+</blockquote>
+<p>此处有一个小问题？如果在这个项目里面的 c 函数能hook住吗？答案是不能！</p>
+<h3 id="原理解释"><a href="#原理解释" class="headerlink" title="原理解释"></a>原理解释</h3><p>新建一个项目，在<code>ViewDidload</code>里面打印文本，把生成的可执行文件拖到 Hopper Disassembler 中。<br><img src="http://note.youdao.com/yws/res/11074/3E4E5CE8E1784419AA9987A131D32AB1" alt="image"><br><img src="http://note.youdao.com/yws/res/11076/FD07B897C3AB4054B8DBCE6A09D97430" alt="image"></p>
+<p>这里跳到 <code>imp__stubs_NSLog</code> 这个位置，进来继续看<br><img src="http://note.youdao.com/yws/res/11079/34EF700BA34D4EFBAFFAA07AD2B18E3E" alt="image"><br>上面是把 <code>0x0c00</code> 位置的值放到x16寄存器上，我们看一下地址</p>
+<p><img src="http://note.youdao.com/yws/res/11081/A26D9FE9259648F9AC3CC5D1AF87C34E" alt="image"><br>找到 <code>0x0C000</code> 的地址，这里是 <code>Data Segment</code>，<code>__la_symbol_ptr Section</code>。这里有两个点很重要：</p>
+<ul>
+<li>属于<code>Data</code>段，可读写</li>
+<li><code>__la_symbol_ptr section</code> 是存放着动态链接的符号表，这里面的符号会在该符号被调用时，通过dyld的<code>dyld_stb_binder</code>过程进行加载。<br>还有一种动态链接相关的表是 <code>__nl_symbol_ptr</code> 表示在动态链接库绑定的时候进行加载的</li>
+</ul>
+<p>到这里就很显示了，fishhook 就是通过修改 <code>__la_symbol_ptr</code> 这张符号表里面的值来达到hook c函数的目的。<br>下面我们来验证一下</p>
+<h3 id="原理验证"><a href="#原理验证" class="headerlink" title="原理验证"></a>原理验证</h3><p>在一个新项目的<code>ViewController</code>里面写上面代码，然后我们关注 <code>__nl_symbol_ptr</code> 这个符号表里面<code>NSLog</code> 对应地址的变化。把可执行文件拖到 <code>MachOView</code>里面<br><img src="http://note.youdao.com/yws/res/11084/56B20444852F487B9FEC5E0DCCBD9D9A" alt="image"><br><img src="http://note.youdao.com/yws/res/11087/FCFC1F2CA5734559B74D21105AB1C077" alt="image"><br>位置是这个<code>0xc000</code>，运行程序，进入断点。找到<code>ALSR</code>的偏移地址<br><img src="http://note.youdao.com/yws/res/11089/25D8F304A6B94246B9E29435A4BD1A14" alt="image"></p>
+<p><img src="http://note.youdao.com/yws/res/11092/CEFFF74E73734F88B3293D009B413689" alt="image"><br>lldb <code>x</code>命令指地址的值读出来，<code>dis -s</code> 以当前赋值的地址反汇编。<br>可以看出来，我们<code>NSLog</code> 调用的地址，暂时看不出来是什么（实际是调了<code>dyld_stb_binder</code>相关函数，进行动态绑定)。</p>
+<p>接下来，我们继续走下一步，NSLog动态符号表对应的值 发生改变，对当前地址反汇编后发现是 <code>Foundation</code> 的<code>NSLog</code> 方法。</p>
+<p><img src="http://note.youdao.com/yws/res/11096/19F11E662F9748CA8E3436BCFC814599" alt="image"></p>
+<p>最后，让代码继续走过<code>rebind_symbols</code>方法，又又发现<code>NSLog</code>动态符号表对应的值 发生改变，对当前地址反汇编后发现是我们自定义的方法</p>
+<p><img src="http://note.youdao.com/yws/res/11098/CD88539E45FF489DABF380BA2AC4BD2A" alt="image"></p>
+<p>结论很明显，<code>__nl_symbol_ptr</code> 处于Data段，可读写。动态符号可通过这里对应的地址值进行跳转，<code>fishhook</code>就是通过修改这里的值达到Hook目的。</p>
+<h3 id="fishhook源码解读"><a href="#fishhook源码解读" class="headerlink" title="fishhook源码解读"></a>fishhook源码解读</h3><p>拿<code>Mach-O</code>文件和源码的操作一起对着来看。</p>
+<h4 id="rebind-symbols-方法"><a href="#rebind-symbols-方法" class="headerlink" title="rebind_symbols 方法"></a>rebind_symbols 方法</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">rebind_symbols</span><span class="params">(struct rebinding rebindings[], <span class="keyword">size_t</span> rebindings_nel)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 把要被hook的函数信息用链表保存起来</span></span><br><span class="line">    <span class="comment">// 头插法的形式添加到_rebindings_head这里</span></span><br><span class="line">  <span class="keyword">int</span> retval = prepend_rebindings(&amp;_rebindings_head, rebindings, rebindings_nel);</span><br><span class="line">  <span class="keyword">if</span> (retval &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> retval;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 第一次的话调用，注册加载镜像的方法_dyld_register_func_for_add_image，</span></span><br><span class="line">  <span class="comment">// 如果已经加载过的镜像，会直接调用回调方法。其他的会在加载的时候回调）</span></span><br><span class="line">  <span class="keyword">if</span> (!_rebindings_head-&gt;next) &#123;</span><br><span class="line">    _dyld_register_func_for_add_image(_rebind_symbols_for_image);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">uint32_t</span> c = _dyld_image_count();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">uint32_t</span> i = <span class="number">0</span>; i &lt; c; i++) &#123;</span><br><span class="line">      _rebind_symbols_for_image(_dyld_get_image_header(i), _dyld_get_image_vmaddr_slide(i));</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> retval;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第一步：preped_rebindings，这部分主要是把 rebindings_entry 以一个链表的形式保存起来。</p>
+<figure class="highlight haxe"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> int prepend_rebindings(struct rebindings_entry **rebindings_head,</span><br><span class="line">                              struct rebinding rebindings[],</span><br><span class="line">                              size_t nel) &#123;</span><br><span class="line">  struct rebindings_entry *<span class="keyword">new</span><span class="type">_entry</span> = malloc(sizeof(struct rebindings_entry));</span><br><span class="line">  <span class="keyword">if</span> (!<span class="keyword">new</span><span class="type">_entry</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">new</span><span class="type">_entry</span>-&gt;rebindings = malloc(sizeof(struct rebinding) * nel);</span><br><span class="line">  <span class="keyword">if</span> (!<span class="keyword">new</span><span class="type">_entry</span>-&gt;rebindings) &#123;</span><br><span class="line">    free(<span class="keyword">new</span><span class="type">_entry</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 头插法，把数据保存起来</span></span><br><span class="line">  memcpy(<span class="keyword">new</span><span class="type">_entry</span>-&gt;rebindings, rebindings, sizeof(struct rebinding) * nel);</span><br><span class="line">  <span class="keyword">new</span><span class="type">_entry</span>-&gt;rebindings_nel = nel;</span><br><span class="line">  <span class="keyword">new</span><span class="type">_entry</span>-&gt;next = *rebindings_head;</span><br><span class="line">  *rebindings_head = <span class="keyword">new</span><span class="type">_entry</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从上面看到，入口函数最终会调到_rebind_symbols_for_image，从页调到rebind_symbols_for_image这个函数里面。<br><figure class="highlight thrift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">static <span class="keyword">void</span> _rebind_symbols_for_image(<span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">mach_header</span> *header,</span></span><br><span class="line"><span class="class">                                      intptr_t slide) </span>&#123;</span><br><span class="line">    rebind_symbols_for_image(_rebindings_head, header, slide);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="rebind-symbols-for-image"><a href="#rebind-symbols-for-image" class="headerlink" title="rebind_symbols_for_image"></a>rebind_symbols_for_image</h4><p>其实重头戏也在这个(rebind_symbols_for_image)函数里面，</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"><span class="doctag">///</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> @param rebindings 需要被交换方法的数组</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> @param header Mach-O文件的header，通过_dyld_get_image_header获取</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> @param slide ASLR的偏移地址(_dyld_get_image_vmaddr_slide获取)</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">rebind_symbols_for_image</span>(<span class="params"><span class="keyword">struct</span> rebindings_entry *rebindings,</span></span></span><br><span class="line"><span class="function"><span class="params">                                     <span class="keyword">const</span> <span class="keyword">struct</span> mach_header *header,</span></span></span><br><span class="line"><span class="function"><span class="params">                                     intptr_t slide</span>)</span> &#123;</span><br></pre></td></tr></table></figure>
+<p>这里可以分三部分来讲解：</p>
+<p><strong>第一部分：确定这个header是否合法</strong></p>
+<p>dladdr函数主要作用是获取 &amp;info 所在动态库的信息，如果获取不到，就证明这个header地址是不合法的。</p>
+<figure class="highlight gauss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Dl_info info;</span><br><span class="line"><span class="keyword">if</span> (<span class="built_in">dladdr</span>(<span class="built_in">header</span>, &amp;info) == <span class="number">0</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>第二部分：可以看到在查找三个 load_command</strong></p>
+<p>分别是<br>linkedit_segment、symtab_cmd、dysymtab_cmd，</p>
+<figure class="highlight gauss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// loadCommand的开始地址在header的后面</span></span><br><span class="line">    uintptr_t cur = (uintptr_t)<span class="built_in">header</span> + <span class="built_in">sizeof</span>(mach_header_t);</span><br><span class="line">    <span class="comment">// 遍历所有的loadCommands</span></span><br><span class="line">    <span class="keyword">for</span> (uint i = <span class="number">0</span>; i &lt; <span class="built_in">header</span>-&gt;ncmds; i++, cur += cur_seg_cmd-&gt;cmdsize) &#123;</span><br><span class="line">        cur_seg_cmd = (segment_command_t *)cur;</span><br><span class="line">        <span class="comment">// Command为LC_SEGMENT_64有好几个（PAGEZERO, TEXT, DATA_COST, DATA, LINKEDIT)</span></span><br><span class="line">        <span class="keyword">if</span> (cur_seg_cmd-&gt;cmd == LC_SEGMENT_ARCH_DEPENDENT) &#123;</span><br><span class="line">            <span class="comment">// 根据segmentName 找到linkedit_segment</span></span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">strcmp</span>(cur_seg_cmd-&gt;segname, SEG_LINKEDIT) == <span class="number">0</span>) &#123;</span><br><span class="line">                linkedit_segment = cur_seg_cmd;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (cur_seg_cmd-&gt;cmd == LC_SYMTAB) &#123;</span><br><span class="line">            symtab_cmd = (<span class="keyword">struct</span> <span class="type">symtab_command</span>*)<span class="type">cur_seg_cmd</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (cur_seg_cmd-&gt;cmd == LC_DYSYMTAB) &#123;</span><br><span class="line">            dysymtab_cmd = (<span class="keyword">struct</span> <span class="type">dysymtab_command</span>*)<span class="type">cur_seg_cmd</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//如果上面的三个loadCommand有一个有空，就返回</span></span><br><span class="line">    <span class="keyword">if</span> (!symtab_cmd || !dysymtab_cmd || !linkedit_segment ||</span><br><span class="line">        !dysymtab_cmd-&gt;nindirectsyms) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>分析一下这三个LoadCommand主要会加载哪些信息</p>
+<p><strong>LINKEDIT Commond</strong></p>
+<p><img src="http://note.youdao.com/yws/res/11102/F5E0CE7273D9491BBF80EDBF3E9A74E1" alt="image"></p>
+<p><img src="http://note.youdao.com/yws/res/11104/4E29A4C157B74B1BBC123FF7A45B9E30" alt="image"></p>
+<p>根据地址可以看到，linkedit_segment 这个命令是用于加载 Dynamic Loader Info 相关的信息。</p>
+<p><strong>LC_SYMTAB(符号表)</strong></p>
+<p><img src="http://note.youdao.com/yws/res/11118/FE859280434E41B9B586AAF9D3FF42A6" alt="image"><br><img src="http://note.youdao.com/yws/res/11120/E0F65B3221AC4A209900176EC8386012" alt="image"></p>
+<p><strong>LC_DYSYMTAB(动态符号表相关)</strong></p>
+<p><img src="http://note.youdao.com/yws/res/11122/62D4609C42D14B088C640625E4C5F3AE" alt="image"></p>
+<p>我们能看到这个 <code>IndSym Table Offset</code> 的值是 <code>0x11648</code>，其他的符号表的offset 是0。</p>
+<blockquote>
+<p><code>IndSym Table Offset</code> 用于存放在字符表的位置</p>
+</blockquote>
+<p><img src="http://note.youdao.com/yws/res/11125/D0E6EE3AD8A24C978CE929AAAA132E2A" alt="image"><br>通过上面的分析，我们搞明白了上面这几个load_command的作用了。那么回过头业，继续往下看第三部分</p>
+<p><strong>第三部分找到各个 符号表地址、字符串表地址、动态符号表地址，然后调用重新绑定函数的方法进行替换</strong></p>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Find base symbol/string table addresses</span></span><br><span class="line"><span class="comment">//链接时程序的基址 = __LINKEDIT.VM_Address -__LINKEDIT.File_Offset + silde的改变值</span></span><br><span class="line"><span class="function"><span class="title">uintptr_t</span> linkedit_base = (uintptr_t)<span class="built_in">slide</span> + linkedit_segment-&gt;</span><span class="function"><span class="title">vmaddr</span> - linkedit_segment-&gt;</span>fileoff;</span><br><span class="line"><span class="comment">//符号表的地址 = 基址 + 符号表偏移量</span></span><br><span class="line"><span class="function"><span class="title">nlist_t</span> *symtab = (nlist_t *)(linkedit_base + symtab_cmd-&gt;</span>symoff);</span><br><span class="line"><span class="comment">//字符串表的地址 = 基址 + 字符串表偏移量</span></span><br><span class="line"><span class="function"><span class="title">char</span> *strtab = (char *)(linkedit_base + symtab_cmd-&gt;</span>stroff);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Get indirect symbol table (array of uint32_t indices into symbol table)</span></span><br><span class="line"><span class="comment">//动态符号表地址 = 基址 + 动态符号表偏移量</span></span><br><span class="line"><span class="function"><span class="title">uint32_t</span> *indirect_symtab = (uint32_t *)(linkedit_base + dysymtab_cmd-&gt;</span>indirectsymoff);</span><br><span class="line"></span><br><span class="line">cur = (uintptr_t)header + sizeof(mach_header_t);</span><br><span class="line"><span class="function"><span class="title">for</span> (uint i = 0; i &lt; header-&gt;</span><span class="function"><span class="title">ncmds</span>; i++, cur += cur_seg_cmd-&gt;</span>cmdsize) &#123;</span><br><span class="line">    cur_seg_cmd = (segment_command_t *)cur;</span><br><span class="line">    <span class="function"><span class="title">if</span> (cur_seg_cmd-&gt;</span>cmd == LC_SEGMENT_ARCH_DEPENDENT) &#123;</span><br><span class="line">        <span class="comment">//非Data段的数据过滤掉，__la_symbol_ptr和__no_la_symbol_ptr(got)这两个section都是放在Data段上</span></span><br><span class="line">        <span class="function"><span class="title">if</span> (strcmp(cur_seg_cmd-&gt;</span>segname, SEG_DATA) != <span class="number">0</span> &amp;&amp;</span><br><span class="line">            <span class="function"><span class="title">strcmp</span>(cur_seg_cmd-&gt;</span>segname, SEG_DATA_CONST) != <span class="number">0</span>) &#123;</span><br><span class="line">            continue;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="title">for</span> (uint j = 0; j &lt; cur_seg_cmd-&gt;</span>nsects; j++) &#123;</span><br><span class="line">            section_t *sect =</span><br><span class="line">            (section_t *)(cur + sizeof(segment_command_t)) + j;</span><br><span class="line">            <span class="comment">//找懒加载表</span></span><br><span class="line">            <span class="function"><span class="title">if</span> ((sect-&gt;</span>flags &amp; SECTION_TYPE) == S_LAZY_SYMBOL_POINTERS) &#123;</span><br><span class="line">                perform_rebinding_with_section(rebindings, sect, <span class="built_in">slide</span>, symtab, strtab, indirect_symtab);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//非懒加载表</span></span><br><span class="line">            <span class="function"><span class="title">if</span> ((sect-&gt;</span>flags &amp; SECTION_TYPE) == S_NON_LAZY_SYMBOL_POINTERS) &#123;</span><br><span class="line">                perform_rebinding_with_section(rebindings, sect, <span class="built_in">slide</span>, symtab, strtab, indirect_symtab);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="http://note.youdao.com/yws/res/11131/F2EA10D9D2C44B5795BD2C5F9A9834CE" alt="image"></p>
+<p>至于为什么叫 <code>got</code> 段，估计是和 ELF 文件有关系</p>
+<p>找到了这 <code>__la_symbol_prt</code> <code>Section</code>的位置后，就进入了查找符号位置，替换方法的逻辑。</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 找到符号表所对应的位置进行绑定</span></span><br><span class="line"><span class="comment">/// @param rebindings rebindings 要交换的数组</span></span><br><span class="line"><span class="comment">/// @param section section_t当前loadcommand的section(__la_symbol_ptr, __no_la_symbol_ptr)</span></span><br><span class="line"><span class="comment">/// @param slide slide alsr程序偏移</span></span><br><span class="line"><span class="comment">/// @param symtab 符号表地址 10608</span></span><br><span class="line"><span class="comment">/// @param strtab 字符串表地址 11708</span></span><br><span class="line"><span class="comment">/// @param indirect_symtab 动态符号表地址 11648</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">perform_rebinding_with_section</span><span class="params">(struct rebindings_entry *rebindings,</span></span></span><br><span class="line"><span class="function"><span class="params">                                           <span class="keyword">section_t</span> *section,</span></span></span><br><span class="line"><span class="function"><span class="params">                                           <span class="keyword">intptr_t</span> slide,</span></span></span><br><span class="line"><span class="function"><span class="params">                                           <span class="keyword">nlist_t</span> *symtab,</span></span></span><br><span class="line"><span class="function"><span class="params">                                           <span class="keyword">char</span> *strtab,</span></span></span><br><span class="line"><span class="function"><span class="params">                                           <span class="keyword">uint32_t</span> *indirect_symtab)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//获取__la_symbol_ptr 和 __no_la_symbol的在Indirect Symbols的起始位置</span></span><br><span class="line">    <span class="keyword">uint32_t</span> *indirect_symbol_indices = indirect_symtab + section-&gt;reserved1;</span><br><span class="line">    <span class="comment">//slide+section-&gt;addr 就是符号对应的存放函数实现的数组也就是我相应的__nl_symbol_ptr和__la_symbol_ptr相应的函数指针都在这里面了，所以可以去寻找到函数的地址</span></span><br><span class="line">    <span class="keyword">void</span> **indirect_symbol_bindings = (<span class="keyword">void</span> **)((<span class="keyword">uintptr_t</span>)slide + section-&gt;addr); <span class="comment">// 0xc000 (__DATA, __la_symbol_ptr的地址)</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//遍历__la_symbol_ptr/ __no_la_symbol 里面的所有符号</span></span><br><span class="line">    <span class="keyword">for</span> (uint i = <span class="number">0</span>; i &lt; section-&gt;<span class="built_in">size</span> / <span class="keyword">sizeof</span>(<span class="keyword">void</span> *); i++) &#123;</span><br><span class="line">        <span class="comment">//找到符号在Indrect Symbol Table表中的值</span></span><br><span class="line">        <span class="comment">//读取indirect table中的数据</span></span><br><span class="line">        <span class="keyword">uint32_t</span> symtab_index = indirect_symbol_indices[i];</span><br><span class="line">        <span class="keyword">if</span> (symtab_index == INDIRECT_SYMBOL_ABS || symtab_index == INDIRECT_SYMBOL_LOCAL ||</span><br><span class="line">            symtab_index == (INDIRECT_SYMBOL_LOCAL   | INDIRECT_SYMBOL_ABS)) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//以symtab_index作为下标，访问symbol table</span></span><br><span class="line">        <span class="keyword">uint32_t</span> strtab_offset = symtab[symtab_index].n_un.n_strx;</span><br><span class="line">        <span class="comment">//获取到symbol_name</span></span><br><span class="line">        <span class="keyword">char</span> *symbol_name = strtab + strtab_offset;</span><br><span class="line">        <span class="comment">//判断是否函数的名称是否有两个字符，为啥是两个，因为函数前面有个_，所以方法的名称最少要1个</span></span><br><span class="line">        <span class="keyword">bool</span> symbol_name_longer_than_1 = symbol_name[<span class="number">0</span>] &amp;&amp; symbol_name[<span class="number">1</span>];</span><br><span class="line">        <span class="comment">//遍历最初的链表，来进行hook</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">rebindings_entry</span> *<span class="title">cur</span> = <span class="title">rebindings</span>;</span></span><br><span class="line">        <span class="keyword">while</span> (cur) &#123;</span><br><span class="line">            <span class="keyword">for</span> (uint j = <span class="number">0</span>; j &lt; cur-&gt;rebindings_nel; j++) &#123;</span><br><span class="line">                <span class="comment">//这里if的条件就是判断从symbol_name[1]两个函数的名字是否都是一致的，以及判断两个</span></span><br><span class="line">                <span class="keyword">if</span> (symbol_name_longer_than_1 &amp;&amp;</span><br><span class="line">                    <span class="built_in">strcmp</span>(&amp;symbol_name[<span class="number">1</span>], cur-&gt;rebindings[j].name) == <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="comment">//判断replaced的地址不为NULL以及我方法的实现和rebindings[j].replacement的方法不一致</span></span><br><span class="line">                    <span class="keyword">if</span> (cur-&gt;rebindings[j].replaced != <span class="literal">NULL</span> &amp;&amp;</span><br><span class="line">                        indirect_symbol_bindings[i] != cur-&gt;rebindings[j].replacement) &#123;</span><br><span class="line">                        <span class="comment">//让rebindings[j].replaced保存indirect_symbol_bindings[i]的函数地址</span></span><br><span class="line">                        *(cur-&gt;rebindings[j].replaced) = indirect_symbol_bindings[i];</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="comment">//将替换后的方法给原先的方法，也就是替换内容为自定义函数地址</span></span><br><span class="line">                    indirect_symbol_bindings[i] = cur-&gt;rebindings[j].replacement;</span><br><span class="line">                    <span class="keyword">goto</span> symbol_loop;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            cur = cur-&gt;next;</span><br><span class="line">        &#125;</span><br><span class="line">    symbol_loop:;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><p>下面以<code>NSLog</code>为例，一步一步使用 <code>Mach-O</code>对应的把流程走完看看，（<code>NSLog</code> 在 <code>__la_symbol_ptr</code> 符号表里面）</p>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">uint32_t</span> *indirect_symbol_indices = indirect_symtab + section-&gt;</span>reserved1; <span class="comment">// 获取 __la_symbol_ptr 符号在 indSymBol的开始位置。</span></span><br></pre></td></tr></table></figure>
+<p><img src="http://note.youdao.com/yws/res/11134/390BDA93A84D4804A870194A5C6BA337" alt="image"></p>
+<p>下面这图可以看到在<code>Indirect Symbols</code> 偏移是 0x19，也就是第25个。<br><img src="http://note.youdao.com/yws/res/11136/032ECA434D004DBB8D62BC59429FA9F5" alt="image"></p>
+<p>走到这步, 其实就是 <code>__la_symbol_ptr</code>的位置<br><figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void **indirect_symbol_bindings = (<span class="name">void</span> **)((<span class="name">uintptr_t</span>)slide + section-&gt;addr)<span class="comment">;</span></span><br></pre></td></tr></table></figure></p>
+<p><img src="http://note.youdao.com/yws/res/11141/7D700537F35D4A54B4D4B4DFA22DF5B3" alt="image"></p>
+<p>进入for 循环第一句，获取在 symtab_index，在 0xE3 这个位置<br>uint32_t symtab_index = indirect_symbol_indices[i];</p>
+<p><img src="http://note.youdao.com/yws/res/11143/D4B2F03BAE984DD68B4C39294D299B89" alt="image"></p>
+<p>根据在 符号表里面的Index(0xE3 = 227)，取到符号对象，并获取在字符串表 strtab的位置。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//以symtab_index作为下标，访问symbol table</span></span><br><span class="line"><span class="keyword">uint32_t</span> strtab_offset = symtab[symtab_index].n_un.n_strx;</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://note.youdao.com/yws/res/11145/59BC19B3C3764FAF860D87B0E490C739" alt="image"></p>
+<p>所以我们取到的字符的位置 0x11708 + 0xD4 = 0x117DC<br><img src="http://note.youdao.com/yws/res/11147/BE8A884242424E34987CE975B362F38F" alt="image"></p>
+<p>然后判断symbol是否大于一，因为前面的 “_”字符是编译期加上的。<br><figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool symbol_name_longer_than_1 = symbol_name<span class="comment">[0]</span> &amp;&amp; symbol_name<span class="comment">[1]</span>;</span><br></pre></td></tr></table></figure></p>
+<p>进入while循环，把rebindings都过一遍，看看和上面字符相等的函数名，进行方法替换。<br><figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (cur) &#123;</span><br><span class="line">    <span class="function"><span class="title">for</span> (uint j = 0; j &lt; cur-&gt;</span>rebindings_nel; j++) &#123;</span><br><span class="line">        <span class="comment">//这里if的条件就是判断从symbol_name[1]两个函数的名字是否都是一致的，以及判断两个</span></span><br><span class="line">        <span class="keyword">if</span> (symbol_name_longer_than_1 &amp;&amp;</span><br><span class="line">            <span class="function"><span class="title">strcmp</span>(&amp;symbol_name[1], cur-&gt;</span>rebindings[j].<span class="keyword">name</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">//判断replaced的地址不为NULL以及我方法的实现和rebindings[j].replacement的方法不一致</span></span><br><span class="line">            <span class="function"><span class="title">if</span> (cur-&gt;</span>rebindings[j].replaced != NULL &amp;&amp;</span><br><span class="line">                <span class="function"><span class="title">indirect_symbol_bindings</span>[i] != cur-&gt;</span>rebindings[j].replacement) &#123;</span><br><span class="line">                <span class="comment">//让rebindings[j].replaced保存indirect_symbol_bindings[i]的函数地址</span></span><br><span class="line">                *(<span class="function"><span class="title">cur</span>-&gt;</span>rebindings[j].replaced) = indirect_symbol_bindings[i];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//将替换后的方法给原先的方法，也就是替换内容为自定义函数地址</span></span><br><span class="line">            <span class="function"><span class="title">indirect_symbol_bindings</span>[i] = cur-&gt;</span>rebindings[j].replacement;</span><br><span class="line">            goto symbol_loop;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="title">cur</span> = cur-&gt;</span>next;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们回顾一下上面查找符号的过程：<br><img src="http://note.youdao.com/yws/res/11149/7B84BD213F1847099B1AA972630B3A59" alt="image"></p>
+<ol>
+<li>从 <code>Loadcomamd</code> 的 <code>reserved1</code> 的位置，找到在 <code>Indirect Symbol Table</code> 的开始位置。</li>
+<li>进入循环，从开始位置遍历 <code>Indirect Symbol Table</code>，长度是<code>Section.size</code></li>
+<li>遍历过程中，拿到<code>Symbol Table</code>的位置，从而知道符号的字符串</li>
+<li>遍历过程中, 字符串和被替换相匹配，如果匹配就进行替换函数。</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/fishhook/" rel="tag"># fishhook</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/11/swift-style-guide/" rel="next" title="编码规范">
+                <i class="fa fa-chevron-left"></i> 编码规范
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/11/20/binary-rebing/" rel="prev" title="二进制重排笔记">
+                二进制重排笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ChenJz</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#使用方法"><span class="nav-number">1.</span> <span class="nav-text">使用方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原理解释"><span class="nav-number">2.</span> <span class="nav-text">原理解释</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原理验证"><span class="nav-number">3.</span> <span class="nav-text">原理验证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fishhook源码解读"><span class="nav-number">4.</span> <span class="nav-text">fishhook源码解读</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#rebind-symbols-方法"><span class="nav-number">4.1.</span> <span class="nav-text">rebind_symbols 方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#rebind-symbols-for-image"><span class="nav-number">4.2.</span> <span class="nav-text">rebind_symbols_for_image</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#例子"><span class="nav-number">5.</span> <span class="nav-text">例子</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ChenJz</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

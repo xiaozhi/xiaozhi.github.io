@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="多线程,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CJZ's Blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="前言GCD是一种很强大的多线程解决方案，但NSOperation同样也支持多样性的操作。 NSOperation有三种状态  isReady   -&amp;gt;  isExecution -&amp;gt; isFinish   isReady: 返回 YES 表示操作已经准备好被执行, 如果返回NO则说明还有其他没有先前的相关步骤没有完成。 isExecuting: 返回YES表示操作正在执行，反之则没在执">
+<meta name="keywords" content="多线程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS多线程之NSOperation">
+<meta property="og:url" content="http://yoursite.com/2015/09/02/iOS-Multi-thread-NSOperation/index.html">
+<meta property="og:site_name" content="CJZ&#39;s Blog">
+<meta property="og:description" content="前言GCD是一种很强大的多线程解决方案，但NSOperation同样也支持多样性的操作。 NSOperation有三种状态  isReady   -&amp;gt;  isExecution -&amp;gt; isFinish   isReady: 返回 YES 表示操作已经准备好被执行, 如果返回NO则说明还有其他没有先前的相关步骤没有完成。 isExecuting: 返回YES表示操作正在执行，反之则没在执">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-11-20T02:18:01.296Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS多线程之NSOperation">
+<meta name="twitter:description" content="前言GCD是一种很强大的多线程解决方案，但NSOperation同样也支持多样性的操作。 NSOperation有三种状态  isReady   -&amp;gt;  isExecution -&amp;gt; isFinish   isReady: 返回 YES 表示操作已经准备好被执行, 如果返回NO则说明还有其他没有先前的相关步骤没有完成。 isExecuting: 返回YES表示操作正在执行，反之则没在执">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2015/09/02/iOS-Multi-thread-NSOperation/">
+
+
+
+
+
+  <title>iOS多线程之NSOperation | CJZ's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CJZ's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">回忆昨天，珍惜今天，期待明天</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/09/02/iOS-Multi-thread-NSOperation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ChenJz">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CJZ's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">iOS多线程之NSOperation</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2015-09-02T18:46:26+08:00">
+                2015-09-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>GCD是一种很强大的多线程解决方案，但NSOperation同样也支持多样性的操作。</p>
+<p>NSOperation有三种状态</p>
+<blockquote>
+<p>isReady   -&gt;  isExecution -&gt; isFinish</p>
+</blockquote>
+<ul>
+<li>isReady: 返回 YES 表示操作已经准备好被执行, 如果返回NO则说明还有其他没有先前的相关步骤没有完成。</li>
+<li>isExecuting: 返回YES表示操作正在执行，反之则没在执行。</li>
+<li>isFinished : 返回YES表示操作执行成功或者被取消了</li>
+</ul>
+<p><strong>NSOperationQueue只有当它管理的所有操作的isFinished属性全标为YES以后操作才停止出列，也就是队列停止运行，所以正确实现这个方法对于避免死锁很关键。</strong></p>
+<a id="more"></a>
+<h2 id="简单使用NSOperation"><a href="#简单使用NSOperation" class="headerlink" title="简单使用NSOperation"></a>简单使用NSOperation</h2><p>NSOperation不可以直接创建，但是我们可以使用它的子类<code>NSBlockOperation</code>和<code>NSInvocationOperation</code>,前者是使用Block的方式，使用起来比较方便。</p>
+<h3 id="NSOperationQueue使用"><a href="#NSOperationQueue使用" class="headerlink" title="NSOperationQueue使用"></a>NSOperationQueue使用</h3><p>类似Java线程池，可以先创建一个线程队列</p>
+<pre><code>NSOperationQueue *queue = [[NSOperationQueue alloc]init];
+queue.maxConcurrentOperationCount = 2; //最大并发数
+</code></pre><p>或者获取main队列</p>
+<pre><code>NSOperationQueue *mainQueue = [NSOperationQueue mainQueue];
+[mainQueue addOperation:operation];
+</code></pre><h3 id="NSBlockOperation-使用"><a href="#NSBlockOperation-使用" class="headerlink" title="NSBlockOperation 使用"></a>NSBlockOperation 使用</h3><p>再创建NSInvocationOperation或者NSBlockOperation的字例，添加到NSOperationQueue当中，队列就会依次执行线程</p>
+<pre><code>NSBlockOperation *operation2 = [NSBlockOperation blockOperationWithBlock:^{
+
+UIImage *image = [weakSelf doLoadImageWithURLString:@&quot;http:xxx.jpg&quot;];
+[[NSOperationQueue mainQueue]addOperationWithBlock:^{
+    weakSelf.imageView2.image = image;
+    }];
+}];
+[queue addOperation:operation2];
+    [weakSelf nsBlockOperationLoadImage];
+}];
+</code></pre><p>也可以直接</p>
+<pre><code>[_operationQueue addOperationWithBlock:^{
+
+}];
+</code></pre><p>有时候使直接调用<code>start</code>方法，但是这样子就是使当前的线程阻塞。所以我不是不建议这样子做滴。</p>
+<h3 id="NSInvocationOperation"><a href="#NSInvocationOperation" class="headerlink" title="NSInvocationOperation"></a>NSInvocationOperation</h3><p>创建NSInvocationOperation</p>
+<pre><code>NSInvocationOperation *invocationOperation = [[NSInvocationOperation alloc]initWithTarget:self selector:@selector(nsinvocationOperationLoadImage) object:nil]`           
+</code></pre><p>下面这个是加载图片的方法</p>
+<pre><code>-(void)nsinvocationOperationLoadImage{
+
+    __weak NSOperationViewController *weakSelf = self;
+
+    UIImage *image = [self doLoadImageWithURLString:@&quot;http://e.hiphotos.baidu.com/image/pic/item/c8ea15ce36d3d539228bfe2f3887e950342ab0ac.jpg&quot;];
+    [[NSOperationQueue mainQueue]addOperationWithBlock:^{
+            [weakSelf.NSInvocationOperationImageView setImage:image];
+    }];
+}
+</code></pre><p>从上面看来NSOperation是不是比GCD方便很多呢？</p>
+<h2 id="NSOperation进阶"><a href="#NSOperation进阶" class="headerlink" title="NSOperation进阶"></a>NSOperation进阶</h2><h3 id="优先级"><a href="#优先级" class="headerlink" title="优先级"></a>优先级</h3><p>跟NSThread一样，NSOpertion也可以设置优先级。</p>
+<pre><code>@property NSOperationQueuePriority queuePriority;
+</code></pre><h3 id="执行顺序（依赖）"><a href="#执行顺序（依赖）" class="headerlink" title="执行顺序（依赖）"></a>执行顺序（依赖）</h3><p>有些时候想要控制执行顺序，使用NSOpreation会方便多了，使用NSOpreation的Dependency就可以实现这种功能。</p>
+<pre><code>NSBlockOperation *operation2 = [NSBlockOperation blockOperationWithBlock:^{
+      NSLog(@&quot;excute operation2&quot;);        
+}];
+NSBlockOperation *operation1 = [NSBlockOperation blockOperationWithBlock:^{
+      NSLog(@&quot;excute operation1&quot;);
+}];
+[ope0ration2 addDependency:ope0ration1];
+[queue addOperation:ope0ration1];    
+[queue addOperation:ope0ration2];
+</code></pre><p>上面先执行第一个operation1,等operation1返回isFinish为YES，即operation1完成了，才会执行operation2。</p>
+<p><strong>注意死锁:一定不可以循环依赖，像A依赖B，B依赖A，一定不要这样做</strong></p>
+<h3 id="CompletionBlock"><a href="#CompletionBlock" class="headerlink" title="CompletionBlock"></a>CompletionBlock</h3><p>这个比较容易理解，就是每个NSOperation执行完毕之后，就会执行该block</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSOperationQueue</span> *queue = [<span class="built_in">NSOperationQueue</span> mainQueue];</span><br><span class="line"><span class="built_in">NSBlockOperation</span> *operation = [<span class="built_in">NSBlockOperation</span> blockOperationWithBlock:^&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"执行操作"</span>);</span><br><span class="line">&#125;];</span><br><span class="line">[operation setCompletionBlock:^&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"执行操作完成"</span>);</span><br><span class="line">&#125;];</span><br><span class="line">[queue addOperation:operation];</span><br></pre></td></tr></table></figure>
+<p>执行结果</p>
+<pre><code>2015-09-22 23:47:47.640 Thread Learn[21307:662442] 执行操作
+2015-09-22 23:47:47.640 Thread Learn[21307:662482] 执行操作完成
+</code></pre><h3 id="取消"><a href="#取消" class="headerlink" title="取消"></a>取消</h3><p>如前面所说，NSOperation有三种状态，isReady -&gt; isExecuting -&gt; isFinish， 如果在Ready的状态中对NSOperation进行取消，NSOperation会进入Finish状态。但是Operation已经开始执行了，就会一直运行到结束，或者由我们进行显示取消。也就是说Operation已经在executing状态，我们调用cancle方法系统不会中止线程的，这需要我们在任务过程中检测取消事件，并中止线程的执行，还要注意一点我们要释放内存或资源。还是看一下实例代码：</p>
+<pre><code>- (IBAction)startNSOperation:(id)sender {
+
+    self.blockOperation = [NSBlockOperation blockOperationWithBlock:^{
+
+    if ([self.blockOperation isCancelled]) {
+        NSLog(@&quot;取消了&quot;);
+        return;
+    }
+    //如果检测还没取消
+    //TODO：这里请求网络，获取数据..
+
+
+    if ([self.blockOperation isCancelled]) {
+        NSLog(@&quot;取消了&quot;);
+        return;
+    }    
+    //如果检测还没取消
+    //TODO：获取到了数据刷新界面...
+    }];
+
+    NSOperationQueue *queue = [[NSOperationQueue alloc]init];
+    [queue addOperation:self.blockOperation];
+}
+</code></pre><p>这种取消跟NSThread有点相似，调用cancle不会退出线程，需要你自已去中止线程，再exit;</p>
+<h2 id="自定义NSOperation"><a href="#自定义NSOperation" class="headerlink" title="自定义NSOperation"></a>自定义NSOperation</h2><p>如果NSBlockOperation和NSInvocationOperation都不能满足你应用的需求，你可以选择继承NSOperation并做你想做的操作。</p>
+<h3 id="自定义非并发"><a href="#自定义非并发" class="headerlink" title="自定义非并发"></a>自定义非并发</h3><p>继承非并发的Operation比并发的要容易的多，只需要实现以下两个方法就行了</p>
+<ul>
+<li>自定义初始化方法</li>
+<li>main方法</li>
+</ul>
+<p>需要自定义初始化方法改变Operation的状态，而把你的实现代码放到main方法里。先看一个简单的例子：</p>
+<pre><code>@interface MyNonConcurrentOperation : NSOperation
+@property id (strong) myData;
+-(id)initWithData:(id)data;
+@end
+
+@implementation MyNonConcurrentOperation
+- (id)initWithData:(id)data {
+   if (self = [super init]){
+        myData = data;
+    }
+   return self;
+}
+-(void)main {
+   @try {
+      // Do some work on myData and report the results.
+   }
+   @catch(...) {
+      // Do not rethrow exceptions.
+   }
+}
+@
+</code></pre><p>很简单，上面的代码提供了一个参数为data的初始化方法，而你可以在main里面写上你的代码。</p>
+<p>你还可以从这里下载<a href="https://developer.apple.com/library/mac/samplecode/NSOperationSample/Introduction/Intro.html#//apple_ref/doc/uid/DTS10004184" target="_blank" rel="noopener">这份代码</a></p>
+<h3 id="并发"><a href="#并发" class="headerlink" title="并发"></a>并发</h3><p>自定义并发的NSOperation就麻烦多了，我们可以看一下下面这个表（来自苹果官方）：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>start</td>
+<td>(必选)所有的并发Operation必需重写这个方法并且要实现这个方法的内容来代替原来的操和。手动执行一个操作，你可以调用start方法。因此，这个方法的实现是这个操作的始点，也是其他线程或者运行这你这个任务的起点。注意一下，在这里永远不要调用[super start]。</td>
+</tr>
+<tr>
+<td>main</td>
+<td>(可选)这个方法就是你的实现的操作(懒得翻译了，哈哈)</td>
+</tr>
+<tr>
+<td>isExecuting 和 isFinish</td>
+<td>(必选)并发队列负责维持当前操作的环境和告诉外部调用者当前的运行状态。因此，一个并发队列必需维持保持一些状态信息以至于知道什么时候执行任务，什么时候完成任务。它必须通过这些方法告诉外部当前的状态。这种而且这些方法必须是线程安全，当状态发生改变的时候，你必须使用KVO通知监听这些状态的对象。</td>
+</tr>
+<tr>
+<td>isConcurrent</td>
+<td>(必选)定义一个并发操作，重写这个方法并且返回YES</td>
+</tr>
+</tbody>
+</table>
+<p>话不多说，选看一下例子：</p>
+<pre><code>@interface MyOperation : NSOperation {
+    BOOL        executing;
+    BOOL        finished;
+}
+- (void)completeOperation;
+@end
+
+@implementation MyOperation
+- (id)init {
+    self = [super init];
+    if (self) {
+        executing = NO;
+        finished = NO;
+    }
+    return self;
+}
+
+- (BOOL)isConcurrent {
+    return YES;
+}
+
+- (BOOL)isExecuting {
+    return executing;
+}
+
+- (BOOL)isFinished {
+    return finished;
+}
+@end
+</code></pre><p>上面的代码简单实现了<code>isFinish</code>、<code>isExecuting</code>、<code>isConcurrent</code>三个方法，<code>isConcurrent</code>只需要返回YES就可以了。<code>isFinish</code>和<code>isExecuting</code>返回当前实例的属性就可以了。</p>
+<pre><code>- (void)start {
+    [self.lock lock];
+   // 在开始任务之前要测试一下是否取消
+   if ([self isCancelled])
+   {
+      // 如果是已经取消了，必需要把Finish设为YES
+      [self willChangeValueForKey:@&quot;isFinished&quot;];
+      finished = YES;
+      [self didChangeValueForKey:@&quot;isFinished&quot;];
+      return;
+   }
+
+   // 如果没有取消，就继续运行代码
+   [self willChangeValueForKey:@&quot;isExecuting&quot;];
+   [NSThread detachNewThreadSelector:@selector(main) toTarget:self withObject:nil];
+   executing = YES;
+   [self didChangeValueForKey:@&quot;isExecuting&quot;];
+   [self.lock unlock];
+}
+
+- (void)main {
+   @try {
+
+       // 写你业务代码
+
+       [self completeOperation];
+   }
+   @catch(...) {
+      // Do not rethrow exceptions.
+   }
+}
+
+- (void)completeOperation {
+     [self.lock lock];
+    [self willChangeValueForKey:@&quot;isFinished&quot;];
+    [self willChangeValueForKey:@&quot;isExecuting&quot;];
+
+    executing = NO;
+    finished = YES;
+
+    [self didChangeValueForKey:@&quot;isExecuting&quot;];
+    [self didChangeValueForKey:@&quot;isFinished&quot;];
+     [self.lock unlock];
+}
+</code></pre><p>注意你的实现要发出合适的KVO通知，因为如果你的NSOperation实现需要用到工作依赖从属特性，而你的实现里没有发出合适的“isFinished”KVO通知，依赖你的NSOperation就无法正常执行。NSOperation支持KVO的属性有：</p>
+<ul>
+<li>isCancelled</li>
+<li>isConcurrent</li>
+<li>isExecuting</li>
+<li>isFinished</li>
+<li>isReady</li>
+<li>dependencies</li>
+<li>queuePriority</li>
+<li>completionBlock</li>
+</ul>
+<p>当然也不是说所有的KVO通知都需要自己去实现，例如通常你用不到addObserver到你工作的“isCancelled”属性，你只需要直接调用cancel方法就可以取消这个工作任务。</p>
+<p>参考文章</p>
+<p><a href="http://nshipster.cn/nsoperation/" target="_blank" rel="noopener">NShipster NSOperation</a></p>
+<p><a href="https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationObjects/OperationObjects.html#//apple_ref/doc/uid/TP40008091-CH101-SW8" target="_blank" rel="noopener">Concurrency Programming Guide</a></p>
+<p><a href="http://www.hrchen.com/2013/06/multi-threading-programming-of-ios-part-2/" target="_blank" rel="noopener">iOS多线程编程Part 2/3 - NSOperation</a></p>
+<p><a href="http://ioser.cc/2013/10/29/nsoperationqueue-and-nsoperation/" target="_blank" rel="noopener">NSOperationQueue and NSOperation</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/多线程/" rel="tag"># 多线程</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/09/02/iOS-Multi-thread-GCD/" rel="next" title="iOS 多线程之GCD">
+                <i class="fa fa-chevron-left"></i> iOS 多线程之GCD
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/11/25/ReactiveCocoaLearn/" rel="prev" title="ReactiveCocoa 笔记（一）">
+                ReactiveCocoa 笔记（一） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ChenJz</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li></ol><li class="nav-item nav-level-2"><a class="nav-link" href="#简单使用NSOperation"><span class="nav-number"></span> <span class="nav-text">简单使用NSOperation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#NSOperationQueue使用"><span class="nav-number">1.</span> <span class="nav-text">NSOperationQueue使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSBlockOperation-使用"><span class="nav-number">2.</span> <span class="nav-text">NSBlockOperation 使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSInvocationOperation"><span class="nav-number">3.</span> <span class="nav-text">NSInvocationOperation</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NSOperation进阶"><span class="nav-number"></span> <span class="nav-text">NSOperation进阶</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#优先级"><span class="nav-number">1.</span> <span class="nav-text">优先级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#执行顺序（依赖）"><span class="nav-number">2.</span> <span class="nav-text">执行顺序（依赖）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CompletionBlock"><span class="nav-number">3.</span> <span class="nav-text">CompletionBlock</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#取消"><span class="nav-number">4.</span> <span class="nav-text">取消</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#自定义NSOperation"><span class="nav-number"></span> <span class="nav-text">自定义NSOperation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义非并发"><span class="nav-number">1.</span> <span class="nav-text">自定义非并发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#并发"><span class="nav-number">2.</span> <span class="nav-text">并发</span></a></li></ol></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ChenJz</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

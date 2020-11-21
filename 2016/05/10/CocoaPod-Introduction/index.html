@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="cocoaPod,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CJZ's Blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="简介没啥好说的，这个东西做iOS的都认识。 前段时间，把自已的一些库给弄出来，做一个私有库，记下来当作笔记。">
+<meta name="keywords" content="cocoaPod">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CocoaPod 为自已创造私有库">
+<meta property="og:url" content="http://yoursite.com/2016/05/10/CocoaPod-Introduction/index.html">
+<meta property="og:site_name" content="CJZ&#39;s Blog">
+<meta property="og:description" content="简介没啥好说的，这个东西做iOS的都认识。 前段时间，把自已的一些库给弄出来，做一个私有库，记下来当作笔记。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/images/CocoaPod/cocoaPod.png">
+<meta property="og:updated_time" content="2020-11-20T02:18:01.293Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CocoaPod 为自已创造私有库">
+<meta name="twitter:description" content="简介没啥好说的，这个东西做iOS的都认识。 前段时间，把自已的一些库给弄出来，做一个私有库，记下来当作笔记。">
+<meta name="twitter:image" content="http://yoursite.com/images/CocoaPod/cocoaPod.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/05/10/CocoaPod-Introduction/">
+
+
+
+
+
+  <title>CocoaPod 为自已创造私有库 | CJZ's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CJZ's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">回忆昨天，珍惜今天，期待明天</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/05/10/CocoaPod-Introduction/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ChenJz">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CJZ's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">CocoaPod 为自已创造私有库</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-05-10T22:50:53+08:00">
+                2016-05-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>没啥好说的，这个东西做iOS的都认识。</p>
+<p>前段时间，把自已的一些库给弄出来，做一个私有库，记下来当作笔记。<br><a id="more"></a></p>
+<h3 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h3><p>先看看下面这个图<br><img src="/images/CocoaPod/cocoaPod.png" alt="image"></p>
+<h3 id="SpecsRepo-是什么"><a href="#SpecsRepo-是什么" class="headerlink" title="SpecsRepo 是什么"></a>SpecsRepo 是什么</h3><p>它是一个索引库，里面在包含了很多个库的索引（有很多的podspec）文件。<br>打开mac笔记本就可以看到 <code>~/.cocoapods/repos/master</code>就是官方库的一个索引。里面的文件夹结构如下面</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── <span class="selector-tag">Specs</span></span><br><span class="line">    └── <span class="selector-attr">[SPEC_NAME]</span></span><br><span class="line">        └── <span class="selector-attr">[VERSION]</span></span><br><span class="line">            └── <span class="selector-attr">[SPEC_NAME]</span><span class="selector-class">.podspec</span></span><br></pre></td></tr></table></figure>
+<p>所以创建一个像上面的库就行了。<br>然后在运行下面命令</p>
+<p><code>$ pod repo add artsy-specs git@github:artsy/Specs.git</code></p>
+<p>此时如果成功的话进入到~/.cocoapods/repos目录下就可以看到artsy-specs这个目录了。至此第一步创建私有Spec Repo完成。</p>
+<h3 id="创建项目的podspec文件"><a href="#创建项目的podspec文件" class="headerlink" title="创建项目的podspec文件"></a>创建项目的podspec文件</h3><p>把上面的那个的索引库（SepcReop） 建好了，那为您的仓库建一个podSepc文件。<br>最后把podSepc文件复制到SepcRepo这个库里面，那整个私有库就完成了。</p>
+<h4 id="1、创建一个podspec文件"><a href="#1、创建一个podspec文件" class="headerlink" title="1、创建一个podspec文件"></a>1、创建一个podspec文件</h4><figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="keyword">spec</span> create your_pod_spec_name</span><br></pre></td></tr></table></figure>
+<h4 id="2、编辑库的信息"><a href="#2、编辑库的信息" class="headerlink" title="2、编辑库的信息"></a>2、编辑库的信息</h4><figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#  Be sure to run `pod spec lint IRKit.podspec' to ensure this is a</span></span><br><span class="line"><span class="comment">#  valid spec and to remove all comments including this before submitting the spec.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#  To learn more about Podspec attributes see http://docs.cocoapods.org/specification.html</span></span><br><span class="line"><span class="comment">#  To see working Podspecs in the CocoaPods repo see https://github.com/CocoaPods/Specs/</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">	</span><br><span class="line">Pod::Spec.new do |s|</span><br><span class="line">	</span><br><span class="line">  <span class="comment"># ―――  Spec Metadata  ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">  <span class="comment">#  These will help people to find your library, and whilst it</span></span><br><span class="line">  <span class="comment">#  can feel like a chore to fill in it's definitely to your advantage. The</span></span><br><span class="line">  <span class="comment">#  summary should be tweet-length, and the description more in depth.</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">	</span><br><span class="line">  s.<span class="attr">name</span>         = <span class="string">"项目名字"</span></span><br><span class="line">  s.<span class="attr">version</span>      = <span class="string">"0.0.1"</span></span><br><span class="line">  s.<span class="attr">summary</span>      = <span class="string">"描述"</span></span><br><span class="line">	</span><br><span class="line">  <span class="comment"># This description is used to generate tags and improve search results.</span></span><br><span class="line">  <span class="comment">#   * Think: What does it do? Why did you write it? What is the focus?</span></span><br><span class="line">  <span class="comment">#   * Try to keep it short, snappy and to the point.</span></span><br><span class="line">  <span class="comment">#   * Write the description between the DESC delimiters below.</span></span><br><span class="line">  <span class="comment">#   * Finally, don't worry about the indent, CocoaPods strips it!</span></span><br><span class="line">  <span class="comment"># s.description  = &lt;&lt;-DESC DESC</span></span><br><span class="line">	</span><br><span class="line">  s.<span class="attr">homepage</span>     = <span class="string">"主页"</span></span><br><span class="line">  <span class="comment"># s.screenshots  = "www.example.com/screenshots_1.gif", "www.example.com/screenshots_2.gif"</span></span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">  <span class="comment"># ―――  Spec License  ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">  <span class="comment">#  Licensing your code is important. See http://choosealicense.com for more info.</span></span><br><span class="line">  <span class="comment">#  CocoaPods will detect a license file if there is a named LICENSE*</span></span><br><span class="line">  <span class="comment">#  Popular ones are 'MIT', 'BSD' and 'Apache License, Version 2.0'.</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">	</span><br><span class="line">  s.<span class="attr">license</span>      = <span class="string">"MIT"</span></span><br><span class="line">  <span class="comment"># s.license      = &#123; :type =&gt; "MIT", :file =&gt; "FILE_LICENSE" &#125;</span></span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">  <span class="comment"># ――― Author Metadata  ――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">  <span class="comment">#  Specify the authors of the library, with email addresses. Email addresses</span></span><br><span class="line">  <span class="comment">#  of the authors are extracted from the SCM log. E.g. $ git log. CocoaPods also</span></span><br><span class="line">  <span class="comment">#  accepts just a name if you'd rather not provide an email address.</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">  <span class="comment">#  Specify a social_media_url where others can refer to, for example a twitter</span></span><br><span class="line">  <span class="comment">#  profile URL.</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">	</span><br><span class="line">  s.<span class="attr">author</span>             = &#123; <span class="string">"cjz"</span> =&gt; <span class="string">"cjz@xxxx.com"</span> &#125;</span><br><span class="line">  <span class="comment"># Or just: s.author    = "xxx"</span></span><br><span class="line">	</span><br><span class="line">  <span class="comment"># ――― Platform Specifics ――――――――――――――――――――――――――――――――――――――――――――――――――――――― #</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">  <span class="comment">#  If this Pod runs only on iOS or OS X, then specify the platform and</span></span><br><span class="line">  <span class="comment">#  the deployment target. You can optionally include the target after the platform.</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">	</span><br><span class="line">  <span class="comment"># s.platform     = :ios, "5.0"</span></span><br><span class="line">	</span><br><span class="line">  <span class="comment">#  When using multiple platforms</span></span><br><span class="line">  <span class="comment"># s.ios.deployment_target = "5.0"</span></span><br><span class="line">  <span class="comment"># s.osx.deployment_target = "10.7"</span></span><br><span class="line">  <span class="comment"># s.watchos.deployment_target = "2.0"</span></span><br><span class="line">  <span class="comment"># s.tvos.deployment_target = "9.0"</span></span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">  <span class="comment"># ――― Source Location ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">  <span class="comment">#  Specify the location from where the source should be retrieved.</span></span><br><span class="line">  <span class="comment">#  Supports git, hg, bzr, svn and HTTP.</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">	</span><br><span class="line">  s.<span class="attr">source</span>       = &#123; :<span class="attr">git</span> =&gt; <span class="string">"http://xxxx/xxxx.git"</span>, :<span class="attr">tag</span> =&gt; <span class="string">"0.0.1"</span> &#125;</span><br><span class="line">	</span><br><span class="line">  <span class="comment"># ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">  <span class="comment">#  CocoaPods is smart about how it includes source code. For source files</span></span><br><span class="line">  <span class="comment">#  giving a folder will include any swift, h, m, mm, c &amp; cpp files.</span></span><br><span class="line">  <span class="comment">#  For header files it will include any header in the folder.</span></span><br><span class="line">  <span class="comment">#  Not including the public_header_files will make all headers public.</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">	</span><br><span class="line">  s.<span class="attr">source_files</span>  = <span class="string">"xxx"</span>, <span class="string">"xxx/**/*.&#123;h,m&#125;"</span></span><br><span class="line">  <span class="comment">#s.exclude_files = "Classes/Exclude"</span></span><br><span class="line">	</span><br><span class="line">  <span class="comment"># s.public_header_files = "xxx/**/*.h"</span></span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">  <span class="comment"># ――― Resources ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">  <span class="comment">#  A list of resources included with the Pod. These are copied into the</span></span><br><span class="line">  <span class="comment">#  target bundle with a build phase script. Anything else will be cleaned.</span></span><br><span class="line">  <span class="comment">#  You can preserve files from being cleaned, please don't preserve</span></span><br><span class="line">  <span class="comment">#  non-essential files like tests, examples and documentation.</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">	</span><br><span class="line">  <span class="comment"># s.resource  = "icon.png"</span></span><br><span class="line">  <span class="comment"># s.resources = "Resources/*.png"</span></span><br><span class="line">	</span><br><span class="line">  <span class="comment"># s.preserve_paths = "FilesToSave", "MoreFilesToSave"</span></span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">  <span class="comment"># ――― Project Linking ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">  <span class="comment">#  Link your library with frameworks, or libraries. Libraries do not include</span></span><br><span class="line">  <span class="comment">#  the lib prefix of their name.</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">	</span><br><span class="line">  <span class="comment"># s.framework  = "SomeFramework"</span></span><br><span class="line">    s.<span class="attr">frameworks</span> = <span class="string">"UIKit"</span>, <span class="string">"Foundation"</span></span><br><span class="line">	</span><br><span class="line">  <span class="comment"># s.library   = "iconv"</span></span><br><span class="line">  <span class="comment"># s.libraries = "iconv", "xml2"</span></span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">  <span class="comment"># ――― Project Settings ――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #</span></span><br><span class="line">  <span class="comment">#</span></span><br><span class="line">  <span class="comment">#  If your library depends on compiler flags you can set them in the xcconfig hash</span></span><br><span class="line">  <span class="comment">#  where they will only apply to your library. If you depend on other Podspecs</span></span><br><span class="line">  <span class="comment">#  you can include multiple dependencies to ensure it works.</span></span><br><span class="line">	</span><br><span class="line">  s.<span class="attr">requires_arc</span> = <span class="literal">true</span></span><br><span class="line">	</span><br><span class="line">  <span class="comment"># s.xcconfig = &#123; "HEADER_SEARCH_PATHS" =&gt; "$(SDKROOT)/usr/include/libxml2" &#125;</span></span><br><span class="line">  <span class="comment"># s.dependency "JSONKit", "~&gt; 1.4"</span></span><br><span class="line">	</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p>还是很简单的，按照上面的提示填完整上面的信息。</p>
+<h4 id="3、验证"><a href="#3、验证" class="headerlink" title="3、验证"></a>3、验证</h4><p>可以在目录下使用下面的命令验证你的podspec文件是否正确,后面的<code>--allow-warnings</code>是允许警告的存在，你也可以去掉。</p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="class"><span class="keyword">lib</span> <span class="title">lint</span> --<span class="title">allow</span>-<span class="title">warnings</span></span></span><br></pre></td></tr></table></figure>
+<h4 id="4､-本地测试"><a href="#4､-本地测试" class="headerlink" title="4､ 本地测试"></a>4､ 本地测试</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="string">'Alamofire'</span>, :<span class="function"><span class="params">path</span> =&gt;</span> <span class="string">'~/Documents/Alamofire'</span></span><br></pre></td></tr></table></figure>
+<p>如果podspec文件在库的根目录下，还可以</p>
+<blockquote>
+<p>master分支</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="string">'Alamofire'</span>, :<span class="function"><span class="params">git</span> =&gt;</span> <span class="string">'https://github.com/Alamofire/Alamofire.git'</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>指定分支</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="string">'Alamofire'</span>, :<span class="function"><span class="params">git</span> =&gt;</span> <span class="string">'https://github.com/Alamofire/Alamofire.git'</span>, :<span class="function"><span class="params">branch</span> =&gt;</span> <span class="string">'dev'</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>指定tag</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="string">'Alamofire'</span>, :<span class="function"><span class="params">git</span> =&gt;</span> <span class="string">'https://github.com/Alamofire/Alamofire.git'</span>, :<span class="function"><span class="params">tag</span> =&gt;</span> <span class="string">'3.1.1'</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>指定commint </p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="string">'Alamofire'</span>, :<span class="function"><span class="params">git</span> =&gt;</span> <span class="string">'https://github.com/Alamofire/Alamofire.git'</span>, :<span class="function"><span class="params">commit</span> =&gt;</span> <span class="string">'0f506b1c45'</span></span><br></pre></td></tr></table></figure>
+<h4 id="5､发布"><a href="#5､发布" class="headerlink" title="5､发布"></a>5､发布</h4><p>只需要下面一句命令就会把你的库发布到私有的Spec中</p>
+<figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ pod repo <span class="keyword">push </span>REPO_NAME SPEC_NAME.podspec</span><br></pre></td></tr></table></figure>
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>在你的Podfile文件中添加下面命令导入私有的Specs库.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> <span class="string">'https://github.com/artsy/Specs.git'</span></span><br></pre></td></tr></table></figure>
+<p>参考文章：</p>
+<p><a href="https://guides.cocoapods.org/making/specs-and-specs-repo.html" target="_blank" rel="noopener">官方教程</a><br><a href="http://bluecoding.aliapp.com/cocoapodsgao-ji-shi-yong/" target="_blank" rel="noopener">Cocoapods使用：为自己的库创建Pod</a><br><a href="http://lijianfei.sinaapp.com/?p=846&amp;utm_source=tuicool&amp;utm_medium=referral" target="_blank" rel="noopener">学习使用CocoaPods后涨的姿势</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/cocoaPod/" rel="tag"># cocoaPod</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/01/18/xcodebuild/" rel="next" title="iOS自动构建-xcodebuild命令">
+                <i class="fa fa-chevron-left"></i> iOS自动构建-xcodebuild命令
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/06/16/Event-Delivery/" rel="prev" title="事件传递：响应链">
+                事件传递：响应链 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ChenJz</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SpecsRepo-是什么"><span class="nav-number">3.</span> <span class="nav-text">SpecsRepo 是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建项目的podspec文件"><span class="nav-number">4.</span> <span class="nav-text">创建项目的podspec文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、创建一个podspec文件"><span class="nav-number">4.1.</span> <span class="nav-text">1、创建一个podspec文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、编辑库的信息"><span class="nav-number">4.2.</span> <span class="nav-text">2、编辑库的信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3、验证"><span class="nav-number">4.3.</span> <span class="nav-text">3、验证</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4､-本地测试"><span class="nav-number">4.4.</span> <span class="nav-text">4､ 本地测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5､发布"><span class="nav-number">4.5.</span> <span class="nav-text">5､发布</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用"><span class="nav-number">5.</span> <span class="nav-text">使用</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ChenJz</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

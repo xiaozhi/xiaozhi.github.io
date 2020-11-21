@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="二进制重排,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CJZ's Blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="在文章开始之前，先搞明白一个问题，在iOS为什么二进制重排能优化启动时间？  一句话来说，就是减少 Page Fault 带来的性能损失  那么什么是PageFault，我们先从虚拟内存讲起。 为什么会引入虚拟内存 地址空间不隔离,所有程序都可以直接访问物理地址，恶意程序就可以随便修改内存的的值。 内存使用效率低 当A和B读进内存中，忽然要执行c，这时候内存不够，而C差不多要占据整个内存，就要把A">
+<meta name="keywords" content="二进制重排">
+<meta property="og:type" content="article">
+<meta property="og:title" content="二进制重排笔记">
+<meta property="og:url" content="http://yoursite.com/2020/11/20/binary-rebing/index.html">
+<meta property="og:site_name" content="CJZ&#39;s Blog">
+<meta property="og:description" content="在文章开始之前，先搞明白一个问题，在iOS为什么二进制重排能优化启动时间？  一句话来说，就是减少 Page Fault 带来的性能损失  那么什么是PageFault，我们先从虚拟内存讲起。 为什么会引入虚拟内存 地址空间不隔离,所有程序都可以直接访问物理地址，恶意程序就可以随便修改内存的的值。 内存使用效率低 当A和B读进内存中，忽然要执行c，这时候内存不够，而C差不多要占据整个内存，就要把A">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11177/3117C23F84624A008B916EA562ADF24D">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11184/F79DCA589FB54681844E6E6D433511E8">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11182/541C065B8EAB469E8601F9B82ED50408">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11246/6EEA0BE4170A46988215D4E367E076FE">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11248/7B03A43F1F6A4AFABC27743141C89255">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11250/02A93820DB4443F69D3E161BDEC3BCB5">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11252/02E14EBDAB834EE288E4FC4D533AECA7">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11256/C00F6FD9CC184271A1E8EA206B06EF8E">
+<meta property="og:image" content="http://note.youdao.com/yws/res/11258/B2F9336038DA4D21B935D55EBB70D82B">
+<meta property="og:updated_time" content="2020-11-20T10:48:43.832Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="二进制重排笔记">
+<meta name="twitter:description" content="在文章开始之前，先搞明白一个问题，在iOS为什么二进制重排能优化启动时间？  一句话来说，就是减少 Page Fault 带来的性能损失  那么什么是PageFault，我们先从虚拟内存讲起。 为什么会引入虚拟内存 地址空间不隔离,所有程序都可以直接访问物理地址，恶意程序就可以随便修改内存的的值。 内存使用效率低 当A和B读进内存中，忽然要执行c，这时候内存不够，而C差不多要占据整个内存，就要把A">
+<meta name="twitter:image" content="http://note.youdao.com/yws/res/11177/3117C23F84624A008B916EA562ADF24D">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/11/20/binary-rebing/">
+
+
+
+
+
+  <title>二进制重排笔记 | CJZ's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CJZ's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">回忆昨天，珍惜今天，期待明天</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/20/binary-rebing/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ChenJz">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CJZ's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">二进制重排笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-20T18:48:08+08:00">
+                2020-11-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在文章开始之前，先搞明白一个问题，在iOS为什么二进制重排能优化启动时间？</p>
+<blockquote>
+<p>一句话来说，就是减少 Page Fault 带来的性能损失</p>
+</blockquote>
+<p>那么什么是<code>PageFault</code>，我们先从虚拟内存讲起。</p>
+<h2 id="为什么会引入虚拟内存"><a href="#为什么会引入虚拟内存" class="headerlink" title="为什么会引入虚拟内存"></a>为什么会引入虚拟内存</h2><ul>
+<li>地址空间不隔离,所有程序都可以直接访问物理地址，恶意程序就可以随便修改内存的的值。</li>
+<li>内存使用效率低<ul>
+<li>当A和B读进内存中，忽然要执行c，这时候内存不够，而C差不多要占据整个内存，就要把A和B存回磁盘中。因为这样子大量的数据换出换入，效率低下。</li>
+</ul>
+</li>
+<li>程序运行的地址不确定<br>因为在程序编写中，指令和数据的地址是固定的，这样子就涉及了程序的重定位问题。</li>
+</ul>
+<p>正是因为上面的3大问题，所以在计算机中引入了虚拟地址的概念。</p>
+<h3 id="分段"><a href="#分段" class="headerlink" title="分段"></a>分段</h3><p>一开始的方案是使用分段，即把每个程序的对应的虚拟内存地址映身到物理内存中<br><img src="http://note.youdao.com/yws/res/11177/3117C23F84624A008B916EA562ADF24D" alt="image"><br>像这种，虽然能解决地址隔离和重定位的问题，但是效率还是不高，因为每次都要把整块地址交换到磁盘中。</p>
+<h3 id="分页"><a href="#分页" class="headerlink" title="分页"></a>分页</h3><p>分页的基本方法是地址空间人为地等分成固定大小的页，每一页的大小由硬件决定,由操作系统选择决定页的大小。<br><img src="http://note.youdao.com/yws/res/11184/F79DCA589FB54681844E6E6D433511E8" alt="image"><br>如上图所谓，内存映射表会把每一页虚拟内存映射到 物理内存 中。<br>如果进程1要访问 Virtual Page 3，这时 page3 不在内存中，就会发生缺页中断，就是 页错误（Page Fault，缺页异常)。然后操作系统接管进程，负现把 Page 3从磁盘中读出来装到内存中。然后内存映射表建立映射关系。</p>
+<p>虚拟内存的实现要依靠硬件的实现，一般来说CPU内置着一个叫 MMU (Memory Management Unit)的部件进行页映射。</p>
+<p><img src="http://note.youdao.com/yws/res/11182/541C065B8EAB469E8601F9B82ED50408" alt="image"></p>
+<h2 id="怎么做"><a href="#怎么做" class="headerlink" title="怎么做"></a>怎么做</h2><ol>
+<li>生成Order文件</li>
+<li>在<code>Xcode</code> 的 <code>BuildSetting</code>里配置Order文件</li>
+<li>生成LinkMap文件，查看是否重排成功</li>
+<li>使用System Trace查看<code>page fault</code>的次数</li>
+<li>最终要看启动时间是否减少</li>
+</ol>
+<p>其中的难点就在于怎么生成 <code>Oder</code> 文件，把 App 启动时的调用到的符号尽可能放在一个page里</p>
+<h3 id="生成Order的三种方法"><a href="#生成Order的三种方法" class="headerlink" title="生成Order的三种方法"></a>生成Order的三种方法</h3><h3 id="clang-静态插桩"><a href="#clang-静态插桩" class="headerlink" title="clang 静态插桩"></a>clang 静态插桩</h3><p>静态插桩就是利用clang提供的回调方法，在回调方法里面获取符号。</p>
+<p>官方文档：<a href="https://clang.llvm.org/docs/SanitizerCoverage.html#tracing-pcs" target="_blank" rel="noopener">https://clang.llvm.org/docs/SanitizerCoverage.html#tracing-pcs</a></p>
+<p>大佬提供的库: <a href="https://github.com/yulingtianxia/AppOrderFiles" target="_blank" rel="noopener">https://github.com/yulingtianxia/AppOrderFiles</a></p>
+<h3 id="使用fishhook-objc-msgSend-方法"><a href="#使用fishhook-objc-msgSend-方法" class="headerlink" title="使用fishhook objc_msgSend 方法"></a>使用fishhook <code>objc_msgSend</code> 方法</h3><p>Hook <code>objc_msgSend</code>方法要保证栈平衡。<br>参考戴老师的方法</p>
+<figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 寄的value放到x12寄存器中，通过寄存器寻址跳转到地址</span></span><br><span class="line"><span class="selector-id">#define</span> <span class="selector-tag">call</span>(b, value) \</span><br><span class="line"><span class="selector-tag">__asm</span> <span class="selector-tag">volatile</span> (<span class="string">"stp x8, x9, [sp, #-16]!\n"</span>); \</span><br><span class="line"><span class="selector-tag">__asm</span> <span class="selector-tag">volatile</span> (<span class="string">"mov x12, %0\n"</span> :: <span class="string">"r"</span>(value)); \</span><br><span class="line"><span class="selector-tag">__asm</span> <span class="selector-tag">volatile</span> (<span class="string">"ldp x8, x9, [sp], #16\n"</span>); \</span><br><span class="line"><span class="selector-tag">__asm</span> <span class="selector-tag">volatile</span> (<span class="number">#b</span> <span class="string">" x12\n"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 把x0~x9的寄存器保存起来，</span></span><br><span class="line"><span class="comment">// 保存x9据说为了内存对齐</span></span><br><span class="line"><span class="comment">// 如果这里用到浮点数，还要把q0~q9保存起来</span></span><br><span class="line"><span class="selector-id">#define</span> <span class="selector-tag">save</span>() \</span><br><span class="line"><span class="selector-tag">__asm</span> <span class="selector-tag">volatile</span> ( \</span><br><span class="line"><span class="string">"stp x8, x9, [sp, #-16]!\n"</span> \</span><br><span class="line"><span class="string">"stp x6, x7, [sp, #-16]!\n"</span> \</span><br><span class="line"><span class="string">"stp x4, x5, [sp, #-16]!\n"</span> \</span><br><span class="line"><span class="string">"stp x2, x3, [sp, #-16]!\n"</span> \</span><br><span class="line"><span class="string">"stp x0, x1, [sp, #-16]!\n"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 从栈里面把数据读取出来，恢复寄存器</span></span><br><span class="line"><span class="comment">// 调整sp指针</span></span><br><span class="line"><span class="selector-id">#define</span> <span class="selector-tag">load</span>() \</span><br><span class="line"><span class="selector-tag">__asm</span> <span class="selector-tag">volatile</span> ( \</span><br><span class="line"><span class="string">"ldp x0, x1, [sp], #16\n"</span> \</span><br><span class="line"><span class="string">"ldp x2, x3, [sp], #16\n"</span> \</span><br><span class="line"><span class="string">"ldp x4, x5, [sp], #16\n"</span> \</span><br><span class="line"><span class="string">"ldp x6, x7, [sp], #16\n"</span> \</span><br><span class="line"><span class="string">"ldp x8, x9, [sp], #16\n"</span> );</span><br><span class="line"></span><br><span class="line"><span class="selector-tag">__attribute__</span>((__naked__))</span><br><span class="line"><span class="selector-tag">static</span> <span class="selector-tag">void</span> <span class="selector-tag">hook_Objc_msgSend</span>() &#123;</span><br><span class="line">    <span class="comment">// Save parameters.</span></span><br><span class="line">    <span class="comment">/// 保存寄存器的参数到栈里面</span></span><br><span class="line">    <span class="comment">/// Step 1</span></span><br><span class="line">    <span class="selector-tag">save</span>()</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// Step 2</span></span><br><span class="line">    <span class="comment">// 保存lr寄存器到第三个寄存器中，_before_objc_msgSend的方法，第三个参数就是lr</span></span><br><span class="line">    <span class="selector-tag">__asm</span> <span class="selector-tag">volatile</span> (<span class="string">"mov x2, lr\n"</span>);</span><br><span class="line">    <span class="selector-tag">__asm</span> <span class="selector-tag">volatile</span> (<span class="string">"mov x3, x4\n"</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 此时的x0、x1，就是objc_msgSend方法里面的id,sel</span></span><br><span class="line">    <span class="selector-tag">call</span>(blr, &amp;before_objc_msgSend)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 从栈里面取出参数到放到寄存器中</span></span><br><span class="line">    <span class="selector-tag">load</span>()</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 调用原来的msg_send方法</span></span><br><span class="line">    <span class="selector-tag">call</span>(blr, orig_objc_msgSend)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 保存原来</span></span><br><span class="line">    <span class="selector-tag">save</span>()</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 调用after_objc_msgSend方法，这个方法要把lr寄存器的地址返回。</span></span><br><span class="line">    <span class="selector-tag">call</span>(blr, &amp;after_objc_msgSend)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 上面调用after_objc_msgSend返回的lr寄存器地址会放到x0里面，所以我们把x0恢复到原来的lr寄存器即可</span></span><br><span class="line">    <span class="selector-tag">__asm</span> <span class="selector-tag">volatile</span> (<span class="string">"mov lr, x0\n"</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/// 恢复上下文</span></span><br><span class="line">    <span class="selector-tag">load</span>()</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 调用返回方法</span></span><br><span class="line">    <span class="selector-tag">ret</span>()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="修改静态库的符号表"><a href="#修改静态库的符号表" class="headerlink" title="修改静态库的符号表"></a>修改静态库的符号表</h3><p>这个方案来自：<a href="https://juejin.cn/post/6844904038564102151" target="_blank" rel="noopener">静态拦截iOS对象方法调用的简易实现</a></p>
+<p>原理：修改静态库的符号名，在静态链接时就能链接到修改后的方法</p>
+<p>定义Person.m 文件</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">Person</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)sayHelloToWorld &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"1+2=3"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>用<code>clang</code>把.m文件生成.o目标文件，</p>
+<blockquote>
+<p>clang -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk -c Person.m -o Person.o</p>
+</blockquote>
+<p>现在的文件还未链接，跳转<code>NSLog</code>符号的地址还没定，一旦链接到<code>bl</code>跳转的地址就是目标地址</p>
+<p><img src="http://note.youdao.com/yws/res/11246/6EEA0BE4170A46988215D4E367E076FE" alt="image"><br><img src="http://note.youdao.com/yws/res/11248/7B03A43F1F6A4AFABC27743141C89255" alt="image"><br><img src="http://note.youdao.com/yws/res/11250/02A93820DB4443F69D3E161BDEC3BCB5" alt="image"><br><img src="http://note.youdao.com/yws/res/11252/02E14EBDAB834EE288E4FC4D533AECA7" alt="image"></p>
+<p>这样子就能找到符号了，如果我们把<code>0x0928</code>位置的<code>N</code>字符改成<code>O</code>。就会变成下面<code>OSLog</code>这个方法<br><img src="http://note.youdao.com/yws/res/11256/C00F6FD9CC184271A1E8EA206B06EF8E" alt="image"><br><img src="http://note.youdao.com/yws/res/11258/B2F9336038DA4D21B935D55EBB70D82B" alt="image"></p>
+<p>我们在主工程定义了<code>OSLog</code>方法，在静态链接就会链接到这个方法。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/二进制重排/" rel="tag"># 二进制重排</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/11/20/fishhook/" rel="next" title="fishhook 原理笔记">
+                <i class="fa fa-chevron-left"></i> fishhook 原理笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/11/20/monitor-main-thread/" rel="prev" title="卡顿监控笔记">
+                卡顿监控笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ChenJz</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么会引入虚拟内存"><span class="nav-number">1.</span> <span class="nav-text">为什么会引入虚拟内存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#分段"><span class="nav-number">1.1.</span> <span class="nav-text">分段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分页"><span class="nav-number">1.2.</span> <span class="nav-text">分页</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#怎么做"><span class="nav-number">2.</span> <span class="nav-text">怎么做</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#生成Order的三种方法"><span class="nav-number">2.1.</span> <span class="nav-text">生成Order的三种方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#clang-静态插桩"><span class="nav-number">2.2.</span> <span class="nav-text">clang 静态插桩</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用fishhook-objc-msgSend-方法"><span class="nav-number">2.3.</span> <span class="nav-text">使用fishhook objc_msgSend 方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改静态库的符号表"><span class="nav-number">2.4.</span> <span class="nav-text">修改静态库的符号表</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ChenJz</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

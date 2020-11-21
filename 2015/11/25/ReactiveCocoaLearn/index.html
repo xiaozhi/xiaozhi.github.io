@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="开源学习,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CJZ's Blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="前言ReactiveCocoa一直在各大名博上面推荐，今天我找个时间特意学习一下。 众所周知，ReactiveCocoa是一个函数响应式编程的框架。那我们在学习之前最好了解一下什么是响应式编程。 函数响应式编程(Functional Reactive Programming，简称FRP)。采用别人的一个小例子： a = 2 b = 2 c = a + b // c is 4 b = 3 // no">
+<meta name="keywords" content="开源学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ReactiveCocoa 笔记（一）">
+<meta property="og:url" content="http://yoursite.com/2015/11/25/ReactiveCocoaLearn/index.html">
+<meta property="og:site_name" content="CJZ&#39;s Blog">
+<meta property="og:description" content="前言ReactiveCocoa一直在各大名博上面推荐，今天我找个时间特意学习一下。 众所周知，ReactiveCocoa是一个函数响应式编程的框架。那我们在学习之前最好了解一下什么是响应式编程。 函数响应式编程(Functional Reactive Programming，简称FRP)。采用别人的一个小例子： a = 2 b = 2 c = a + b // c is 4 b = 3 // no">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-11-20T02:18:01.294Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ReactiveCocoa 笔记（一）">
+<meta name="twitter:description" content="前言ReactiveCocoa一直在各大名博上面推荐，今天我找个时间特意学习一下。 众所周知，ReactiveCocoa是一个函数响应式编程的框架。那我们在学习之前最好了解一下什么是响应式编程。 函数响应式编程(Functional Reactive Programming，简称FRP)。采用别人的一个小例子： a = 2 b = 2 c = a + b // c is 4 b = 3 // no">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2015/11/25/ReactiveCocoaLearn/">
+
+
+
+
+
+  <title>ReactiveCocoa 笔记（一） | CJZ's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CJZ's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">回忆昨天，珍惜今天，期待明天</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/11/25/ReactiveCocoaLearn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ChenJz">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CJZ's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ReactiveCocoa 笔记（一）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2015-11-25T17:39:29+08:00">
+                2015-11-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>ReactiveCocoa一直在各大名博上面推荐，今天我找个时间特意学习一下。</p>
+<p>众所周知，ReactiveCocoa是一个函数响应式编程的框架。那我们在学习之前最好了解一下什么是响应式编程。</p>
+<p><strong>函数响应式编程(Functional Reactive Programming，简称FRP)</strong>。<br>采用别人的一个小例子：</p>
+<pre><code>a = 2
+b = 2
+c = a + b // c is 4
+b = 3
+// now what is the value of c?
+</code></pre><p>如果是像我们日常的OOP，那c的结果应该是4。但是是FRP，c的值会随着b的变化而变化，也就是说当<code>b=3</code>时，c应该是5。<br>比较直观的例子就是Excel，当改变某一个单元格的内容时，该单元格相关的计算结果也会随之改变。<br><a id="more"></a><br><strong>函数式编程</strong></p>
+<p>这个可以参数两位前辈的文章。</p>
+<p><a href="http://www.ruanyifeng.com/blog/2012/04/functional_programming.html" target="_blank" rel="noopener">函数式编程初探（作者：阮一峰）</a></p>
+<p><a href="http://coolshell.cn/articles/10822.html" target="_blank" rel="noopener">函数式编程 (作者：陈皓)</a></p>
+<h1 id="简单例子"><a href="#简单例子" class="headerlink" title="简单例子"></a>简单例子</h1><p>学习ReactiveCocoa之前，我们先了解它是怎么运作的。很明显它是通过扩展的观察者模式（也叫订阅者模式）实现的。</p>
+<p>首先，我们会有一个可以发放信号的对象（RACSignal），用于发送信号。有这个号信号，那么可以订阅一些事件了，也就是说，发出信号执行什么操作。</p>
+<p>OK，大概了解了ReactiveCocoa的运作方式，下面看一段小代码。</p>
+<pre><code>RACSignal *racsignal = [RACSignal createSignal:
+                    ^RACDisposable *(id&lt;RACSubscriber&gt; subscriber) {
+
+                        //发送信号
+                        [subscriber sendNext:@&quot; 信号 1 &quot;];
+                        [subscriber sendCompleted];
+                        return [RACDisposable disposableWithBlock:^{
+                            NSLog(@&quot;信号销毁&quot;);
+                        }];
+}];
+[racsignal subscribeNext:^(id x) {
+        NSLog(@&quot;接收到信号 || ：%@&quot;,x);
+}];
+</code></pre><p>很简单的小例子，但并不会让人察觉ReactiveCocoa的强大之处。<br>#</p>
+<h1 id="RAC的基本操作符"><a href="#RAC的基本操作符" class="headerlink" title="RAC的基本操作符"></a>RAC的基本操作符</h1><h2 id="转化数据流"><a href="#转化数据流" class="headerlink" title="转化数据流"></a>转化数据流</h2><h3 id="Mapping"><a href="#Mapping" class="headerlink" title="Mapping"></a>Mapping</h3><h3 id="Filtering"><a href="#Filtering" class="headerlink" title="Filtering"></a>Filtering</h3><h2 id="合并数据流"><a href="#合并数据流" class="headerlink" title="合并数据流"></a>合并数据流</h2><h3 id="Concatenating"><a href="#Concatenating" class="headerlink" title="Concatenating"></a>Concatenating</h3><h3 id="Flattening"><a href="#Flattening" class="headerlink" title="Flattening"></a>Flattening</h3><h3 id="Mapping-and-flattening"><a href="#Mapping-and-flattening" class="headerlink" title="Mapping and flattening"></a>Mapping and flattening</h3><h2 id="合并信号"><a href="#合并信号" class="headerlink" title="合并信号"></a>合并信号</h2><h3 id="Sequencing"><a href="#Sequencing" class="headerlink" title="Sequencing"></a>Sequencing</h3><h3 id="Merging"><a href="#Merging" class="headerlink" title="Merging"></a>Merging</h3><h3 id="Combining-latest-values"><a href="#Combining-latest-values" class="headerlink" title="Combining latest values"></a>Combining latest values</h3><h3 id="Switching"><a href="#Switching" class="headerlink" title="Switching"></a>Switching</h3><p>#扩展阅读<br><a href="http://www.ruanyifeng.com/blog/2012/04/functional_programming.html" target="_blank" rel="noopener">函数式编程初探（作者：阮一峰）</a></p>
+<p><a href="http://coolshell.cn/articles/10822.html" target="_blank" rel="noopener">函数式编程 (作者：陈皓)</a></p>
+<p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa" target="_blank" rel="noopener">gitHub 地址</a></p>
+<p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa/blob/master/Documentation/Legacy/BasicOperators.md#subscription" target="_blank" rel="noopener">BasicOperators GitHub Documentation</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/开源学习/" rel="tag"># 开源学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/09/02/iOS-Multi-thread-NSOperation/" rel="next" title="iOS多线程之NSOperation">
+                <i class="fa fa-chevron-left"></i> iOS多线程之NSOperation
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/01/11/Summary-in-2015/" rel="prev" title="回首2015，计划2016">
+                回首2015，计划2016 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ChenJz</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#简单例子"><span class="nav-number"></span> <span class="nav-text">简单例子</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RAC的基本操作符"><span class="nav-number"></span> <span class="nav-text">RAC的基本操作符</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#转化数据流"><span class="nav-number"></span> <span class="nav-text">转化数据流</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mapping"><span class="nav-number">1.</span> <span class="nav-text">Mapping</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Filtering"><span class="nav-number">2.</span> <span class="nav-text">Filtering</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#合并数据流"><span class="nav-number"></span> <span class="nav-text">合并数据流</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Concatenating"><span class="nav-number">1.</span> <span class="nav-text">Concatenating</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Flattening"><span class="nav-number">2.</span> <span class="nav-text">Flattening</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Mapping-and-flattening"><span class="nav-number">3.</span> <span class="nav-text">Mapping and flattening</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#合并信号"><span class="nav-number"></span> <span class="nav-text">合并信号</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Sequencing"><span class="nav-number">1.</span> <span class="nav-text">Sequencing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Merging"><span class="nav-number">2.</span> <span class="nav-text">Merging</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Combining-latest-values"><span class="nav-number">3.</span> <span class="nav-text">Combining latest values</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Switching"><span class="nav-number">4.</span> <span class="nav-text">Switching</span></a></li></ol></li></ol></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ChenJz</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

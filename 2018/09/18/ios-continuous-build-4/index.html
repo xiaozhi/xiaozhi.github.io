@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Fastlane,自动构建,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CJZ's Blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="简介Jenkins是开源的自动构建服务器，一般被用于各种各样的构建任务、测试和发布软件等等。因为是图形化界面，所以对于一些黑盒测试人员来说，非常友好。Jenkins+Fastlane简直就是我们客户端的福音。 安装 &amp;amp;&amp;amp; 配置在 macOS 安装非常简单，可以直接到官网找到下载包，直接跟我们安装应用差不多。 当然还支持Docker、brew、war包等一些方式 具体可以查看官网介绍">
+<meta name="keywords" content="Fastlane,自动构建">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS持续集成（四）——jenkins">
+<meta property="og:url" content="http://yoursite.com/2018/09/18/ios-continuous-build-4/index.html">
+<meta property="og:site_name" content="CJZ&#39;s Blog">
+<meta property="og:description" content="简介Jenkins是开源的自动构建服务器，一般被用于各种各样的构建任务、测试和发布软件等等。因为是图形化界面，所以对于一些黑盒测试人员来说，非常友好。Jenkins+Fastlane简直就是我们客户端的福音。 安装 &amp;amp;&amp;amp; 配置在 macOS 安装非常简单，可以直接到官网找到下载包，直接跟我们安装应用差不多。 当然还支持Docker、brew、war包等一些方式 具体可以查看官网介绍">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://pdonhhxml.bkt.clouddn.com/2018-09-10-081750.png">
+<meta property="og:image" content="http://pdonhhxml.bkt.clouddn.com/2018-09-10-082916.png">
+<meta property="og:image" content="http://pdonhhxml.bkt.clouddn.com/2018-09-10-083830.png">
+<meta property="og:image" content="http://pdonhhxml.bkt.clouddn.com/2018-09-10-084508.png">
+<meta property="og:image" content="http://pdonhhxml.bkt.clouddn.com/2018-09-10-084709.png">
+<meta property="og:image" content="http://pdonhhxml.bkt.clouddn.com/2018-09-10-090839.png">
+<meta property="og:image" content="http://pdonhhxml.bkt.clouddn.com/2018-09-10-091401.png">
+<meta property="og:image" content="http://pdonhhxml.bkt.clouddn.com/2018-09-10-092734.png">
+<meta property="og:image" content="http://pdonhhxml.bkt.clouddn.com/2018-09-10-100416.png">
+<meta property="og:image" content="http://pdonhhxml.bkt.clouddn.com/2018-09-10-101214.png">
+<meta property="og:image" content="http://pdonhhxml.bkt.clouddn.com/2018-09-10-101329.png">
+<meta property="og:updated_time" content="2020-11-20T02:18:01.296Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS持续集成（四）——jenkins">
+<meta name="twitter:description" content="简介Jenkins是开源的自动构建服务器，一般被用于各种各样的构建任务、测试和发布软件等等。因为是图形化界面，所以对于一些黑盒测试人员来说，非常友好。Jenkins+Fastlane简直就是我们客户端的福音。 安装 &amp;amp;&amp;amp; 配置在 macOS 安装非常简单，可以直接到官网找到下载包，直接跟我们安装应用差不多。 当然还支持Docker、brew、war包等一些方式 具体可以查看官网介绍">
+<meta name="twitter:image" content="http://pdonhhxml.bkt.clouddn.com/2018-09-10-081750.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/09/18/ios-continuous-build-4/">
+
+
+
+
+
+  <title>iOS持续集成（四）——jenkins | CJZ's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CJZ's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">回忆昨天，珍惜今天，期待明天</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/18/ios-continuous-build-4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ChenJz">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CJZ's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">iOS持续集成（四）——jenkins</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-18T10:50:01+08:00">
+                2018-09-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p><code>Jenkins</code>是开源的自动构建服务器，一般被用于各种各样的构建任务、测试和发布软件等等。因为是图形化界面，所以对于一些黑盒测试人员来说，非常友好。<code>Jenkins</code>+<code>Fastlane</code>简直就是我们客户端的福音。</p>
+<h3 id="安装-amp-amp-配置"><a href="#安装-amp-amp-配置" class="headerlink" title="安装 &amp;&amp; 配置"></a>安装 &amp;&amp; 配置</h3><p>在 macOS 安装非常简单，可以直接到官网找到<a href="http://mirrors.jenkins.io/osx/latest" target="_blank" rel="noopener">下载包</a>，直接跟我们安装应用差不多。</p>
+<p>当然还支持<code>Docker</code>、<code>brew</code>、<code>war包</code>等一些方式</p>
+<p>具体可以查看<a href="https://jenkins.io/doc/book/installing/" target="_blank" rel="noopener">官网介绍</a></p>
+<p>安装完成后，访问 <code>http://localhost:8080</code>就能第一次访问<code>Jenkins</code>。</p>
+<p>然后会出现下面的界面：</p>
+<p><img src="http://pdonhhxml.bkt.clouddn.com/2018-09-10-081750.png" alt></p>
+<p>在此过程中文件夹<code>secrets</code>由于没有访问权限。那只能手动改文件夹的权限，从里复制密码填进去。</p>
+<p>接下面会要求安装推荐插件，或者自定义安装。我们这可以点击推荐安装。</p>
+<p>第一个账户：</p>
+<p><img src="http://pdonhhxml.bkt.clouddn.com/2018-09-10-082916.png" alt></p>
+<h3 id="第一个项目"><a href="#第一个项目" class="headerlink" title="第一个项目"></a>第一个项目</h3><p>点击左边的 <strong><code>新建任务</code></strong></p>
+<p><img src="http://pdonhhxml.bkt.clouddn.com/2018-09-10-083830.png" alt></p>
+<p>选择 <strong><code>构建一个自由风格的软件项目</code></strong>，输入项目名字</p>
+<p><img src="http://pdonhhxml.bkt.clouddn.com/2018-09-10-084508.png" alt></p>
+<p>由于我们用的是<code>Git</code>管理代码，所以配置一个<code>ssh key</code></p>
+<p><img src="http://pdonhhxml.bkt.clouddn.com/2018-09-10-084709.png" alt></p>
+<p>由于项目里面多个分支，为了可以选择分支构建。</p>
+<p>另外，为了区别<code>Fir</code>和<code>TestFlight</code>两个渠道</p>
+<p>我们添加两个参数：</p>
+<p><img src="http://pdonhhxml.bkt.clouddn.com/2018-09-10-090839.png" alt></p>
+<p> 这里的<code>Git Parameter</code>需要手动到插件管理上装好</p>
+<p> 然后在下面的 <code>Git</code>选项中使用<code>branch</code>变量</p>
+<p> <img src="http://pdonhhxml.bkt.clouddn.com/2018-09-10-091401.png" alt></p>
+<p> 由于使用的是<code>Fastlane</code>构建，那么在构建选项上，选择<code>执行shell</code></p>
+<p> <img src="http://pdonhhxml.bkt.clouddn.com/2018-09-10-092734.png" alt></p>
+<p> 这样子就算完成的一个简单项目的配置</p>
+<h3 id="Jenkins-节点-分布式构建"><a href="#Jenkins-节点-分布式构建" class="headerlink" title="Jenkins 节点(分布式构建)"></a>Jenkins 节点(分布式构建)</h3><p> 构建使用的电脑一般都比较古老，为了把构建的压力分担出去，可能会选多台<code>Mac</code>共同构建，这样子就形成了分布式。</p>
+<h4 id="添加一个节点"><a href="#添加一个节点" class="headerlink" title="添加一个节点"></a>添加一个节点</h4><p> 点击 系统管理 -&gt; 管理节点 进入节点页面</p>
+<p> <img src="http://pdonhhxml.bkt.clouddn.com/2018-09-10-100416.png" alt></p>
+<p> 点击确定，配置节点</p>
+<p><img src="http://pdonhhxml.bkt.clouddn.com/2018-09-10-101214.png" alt></p>
+<p>然后点击节点，进去节点页面，启动即可。</p>
+<p>回到首页就可以看到节点数量。</p>
+<p><img src="http://pdonhhxml.bkt.clouddn.com/2018-09-10-101329.png" alt></p>
+<p>这样子一个节点配置完成</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>本文仅仅是持续集成的入门，更多个性化的配置，需要根据不同的需求，通过<code>Jenkins</code>的插件完成。通过<code>Jenkins</code>集成可以完成的内容，还有单元测试、代码规范检查等等。</p>
+<p>能偷懒，别自已动手，机器就是我们的最好帮手。写代码不是搬砖，是创造具有更多生产力的工具。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Fastlane/" rel="tag"># Fastlane</a>
+          
+            <a href="/tags/自动构建/" rel="tag"># 自动构建</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/17/ios-continuous-build-3/" rel="next" title="iOS持续集成（三）—— fastlane 自定义插件">
+                <i class="fa fa-chevron-left"></i> iOS持续集成（三）—— fastlane 自定义插件
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/11/swift-style-guide/" rel="prev" title="编码规范">
+                编码规范 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ChenJz</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装-amp-amp-配置"><span class="nav-number">2.</span> <span class="nav-text">安装 &amp;&amp; 配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第一个项目"><span class="nav-number">3.</span> <span class="nav-text">第一个项目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Jenkins-节点-分布式构建"><span class="nav-number">4.</span> <span class="nav-text">Jenkins 节点(分布式构建)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#添加一个节点"><span class="nav-number">4.1.</span> <span class="nav-text">添加一个节点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ChenJz</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

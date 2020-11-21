@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Fastlane,自动构建,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="CJZ's Blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="开篇回想一下我们发布应用，要进行多少步操作。一旦其中一步失误了，又得重新来。这完完全全不是我们工程师的风格。在软件工程里面，我们一直都推崇把重复、流程化的工作交给程序完成，像这种浪费人生的工作，实在是不应该浪费我们的人生。这次的文章主角就是为了解放我们而来—— fastlane。这个明星库在 github 已经高达 1w 多的start量。 Fastlanefastlane 是 iOS (还有 A">
+<meta name="keywords" content="Fastlane,自动构建">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS持续集成（一）——fastlane 使用">
+<meta property="og:url" content="http://yoursite.com/2018/09/02/ios-continuous-build-1/index.html">
+<meta property="og:site_name" content="CJZ&#39;s Blog">
+<meta property="og:description" content="开篇回想一下我们发布应用，要进行多少步操作。一旦其中一步失误了，又得重新来。这完完全全不是我们工程师的风格。在软件工程里面，我们一直都推崇把重复、流程化的工作交给程序完成，像这种浪费人生的工作，实在是不应该浪费我们的人生。这次的文章主角就是为了解放我们而来—— fastlane。这个明星库在 github 已经高达 1w 多的start量。 Fastlanefastlane 是 iOS (还有 A">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-11-20T02:18:01.296Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS持续集成（一）——fastlane 使用">
+<meta name="twitter:description" content="开篇回想一下我们发布应用，要进行多少步操作。一旦其中一步失误了，又得重新来。这完完全全不是我们工程师的风格。在软件工程里面，我们一直都推崇把重复、流程化的工作交给程序完成，像这种浪费人生的工作，实在是不应该浪费我们的人生。这次的文章主角就是为了解放我们而来—— fastlane。这个明星库在 github 已经高达 1w 多的start量。 Fastlanefastlane 是 iOS (还有 A">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/09/02/ios-continuous-build-1/">
+
+
+
+
+
+  <title>iOS持续集成（一）——fastlane 使用 | CJZ's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">CJZ's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">回忆昨天，珍惜今天，期待明天</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/02/ios-continuous-build-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ChenJz">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CJZ's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">iOS持续集成（一）——fastlane 使用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-02T17:56:31+08:00">
+                2018-09-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="开篇"><a href="#开篇" class="headerlink" title="开篇"></a>开篇</h3><p>回想一下我们发布应用，要进行多少步操作。一旦其中一步失误了，又得重新来。这完完全全不是我们工程师的风格。在软件工程里面，我们一直都推崇把重复、流程化的工作交给程序完成，像这种浪费人生的工作，实在是不应该浪费我们的人生。这次的文章主角就是为了解放我们而来—— <code>fastlane</code>。这个明星库在 <code>github</code> 已经高达 1w 多的start量。</p>
+<h3 id="Fastlane"><a href="#Fastlane" class="headerlink" title="Fastlane"></a>Fastlane</h3><p>fastlane 是 iOS (还有 Android ) 布署和发布最好的一套工具。它处理了所有重复的工作，例如生成截图，处理签名和发布应用。</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>fastlane实际是由Ruby写的，使用Ruby的Gem安装是我们的不二选择</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo gem <span class="keyword">install</span> fastlane -NV</span><br></pre></td></tr></table></figure>
+<p>接着在终端进入项目里面（目前fastlane swift 正在测试，就以之前的版本讲解）</p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">fastlane  init</span></span><br></pre></td></tr></table></figure>
+<p>按照提示初始化完成之后，在项目下面生成 fastlane 文件夹</p>
+<h3 id="基本介绍"><a href="#基本介绍" class="headerlink" title="基本介绍"></a>基本介绍</h3><p>先普及两个重要的文件，初始化后在<code>./fastlane</code>文件件即可找到</p>
+<h3 id="Appfile"><a href="#Appfile" class="headerlink" title="Appfile"></a>Appfile</h3><p>存放着 <strong>AppleID</strong> 或者 <strong>BundleID</strong> 等一些fastlane需要用到的信息。基本上我们不需要改动这个文件的内容。<br>它放到你项目下面的 <code>./fastlane</code>文件夹下面，默认生成的文件如下：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">app_identifier <span class="string">"net.sunapps.1"</span> # The bundle identifier of your app</span><br><span class="line">apple_id <span class="string">"felix@krausefx.com"</span>  # Your Apple email address</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果账号里面有多个team，可以指定所有的team</span></span><br><span class="line"><span class="comment"># team_name "Felix Krause"</span></span><br><span class="line"><span class="comment"># team_id "Q2CBPJ58CA"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 指定 App Store Connect 使用的team</span></span><br><span class="line"><span class="comment"># itc_team_name "Company Name"</span></span><br><span class="line"><span class="comment"># itc_team_id "18742801"</span></span><br></pre></td></tr></table></figure>
+<p>更多详细的配置，可以参考一下文档<br><a href="https://docs.fastlane.tools/advanced/#appfile" target="_blank" rel="noopener">Appfile Doc</a></p>
+<h3 id="FastFile"><a href="#FastFile" class="headerlink" title="FastFile"></a>FastFile</h3><p>一开始生成的<code>Fastlane</code>文件大概如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">platform :ios <span class="keyword">do</span></span><br><span class="line">  before_all <span class="keyword">do</span></span><br><span class="line">    </span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">desc</span> <span class="string">"Runs all the tests"</span></span><br><span class="line">  lane :<span class="keyword">test</span> <span class="keyword">do</span></span><br><span class="line">    <span class="keyword">scan</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># You can define as many lanes as you want</span></span><br><span class="line"></span><br><span class="line">  after_all <span class="keyword">do</span> |lane|</span><br><span class="line"></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">error</span> <span class="keyword">do</span> |lane, <span class="keyword">exception</span>|</span><br><span class="line">    <span class="comment"># slack(</span></span><br><span class="line">    <span class="comment">#   message: "Error message"</span></span><br><span class="line">    <span class="comment"># )</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p><code>Fastfile</code>里面包含的块类型有四种：</p>
+<ul>
+<li><code>before_all</code> 用于执行任务之前的操作，比如使用<code>cocopods</code>更新pod库</li>
+<li><code>after_all</code> 用于执行任务之后的操作，比如发送邮件，通知之前的</li>
+<li><code>error</code> 用于发生错误的操作</li>
+<li><code>lane</code> 定义用户的主要任务流程。例如打包<code>ipa</code>，执行测试等等</li>
+</ul>
+<p>如下面，来讲解一下lane的组成。<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">desc <span class="string">"Push a new beta build to TestFlight"</span>   <span class="comment">//该任务的描述</span></span><br><span class="line"><span class="string">lane :</span>beta do  <span class="comment">//定义名字为 beta 的任务</span></span><br><span class="line">  build_app(<span class="string">workspace:</span> <span class="string">"expample.xcworkspace"</span>, <span class="string">scheme:</span> <span class="string">"example"</span>) <span class="comment">//构建App，又叫gym</span></span><br><span class="line">  upload_to_testflight <span class="comment">//上传到testfilght，</span></span><br><span class="line">end</span><br></pre></td></tr></table></figure></p>
+<p>该任务的作用就是构建应用并上传到 TestFilght。下面有两个 Action</p>
+<ul>
+<li><code>build_app</code> 生成 ipa 文件</li>
+<li><code>upload_to_testflight</code> 把 ipa 文件上传到 TestFilght</li>
+</ul>
+<p>在控制台进入项目所在的文件夹下面，执行下面命令</p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">fastlane beta</span></span><br></pre></td></tr></table></figure>
+<p>即可执行任务，按照上面的任务，会生成 ipa 并上传到 TestFilght。其实很简单，定义好任务，控制台执行任务即可。</p>
+<h3 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h3><p>那么如何写一个我们属于自己的 lane 呢? 就以发布 ipa 到 fir 为例</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">desc <span class="string">"发布到Fir"</span></span><br><span class="line">lane <span class="symbol">:pulish_to_fir</span> <span class="keyword">do</span></span><br><span class="line">  <span class="comment"># 运行 pod install </span></span><br><span class="line">  cocoapods </span><br><span class="line">  <span class="comment"># 构建和打包ipa</span></span><br><span class="line">  gym(</span><br><span class="line">    <span class="symbol">clean:</span> <span class="keyword">true</span>,</span><br><span class="line">    <span class="symbol">output_directory:</span> <span class="string">'./firim'</span>,</span><br><span class="line">    <span class="symbol">scheme:</span> <span class="string">'xxxx'</span>,</span><br><span class="line">    <span class="symbol">configuration:</span> <span class="string">'Test'</span>,</span><br><span class="line">    <span class="symbol">export_options:</span> &#123;</span><br><span class="line">      <span class="symbol">method:</span> <span class="string">'development'</span>,</span><br><span class="line">      <span class="symbol">provisioningProfiles:</span> &#123;</span><br><span class="line">          <span class="string">"xxx.xxx.xxx"</span>: <span class="string">"match Development xxx.xxx.xxx"</span></span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;</span><br><span class="line">  )</span><br><span class="line">  <span class="comment"># 上传ipa到fir.im服务器，在fir.im获取firim_api_token</span></span><br><span class="line">  firim(<span class="symbol">firim_api_token:</span> <span class="string">"fir_token"</span>)</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>下面解释一下上面的内容</p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">cocoapods</span></span><br></pre></td></tr></table></figure>
+<p>在项目里执行 <code>pod install</code>，详细例子可见 <a href="https://docs.fastlane.tools/actions/cocoapods/#cocoapods" target="_blank" rel="noopener">Doc</a></p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">sh </span><span class="string">"./update_version.sh"</span></span><br></pre></td></tr></table></figure>
+<p>这是由作者本地写的更新版本号的脚本</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">gym</span> （又名build_app)</span><br></pre></td></tr></table></figure>
+<p><code>gym</code> 是fastlane的里面一部分，它可以方便生成和签名ipa，能为开发者省下不少功夫。</p>
+<p><a href="https://docs.fastlane.tools/actions/build_app/#build_app" target="_blank" rel="noopener">Doc</a></p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">firim</span></span><br></pre></td></tr></table></figure>
+<p><code>firim</code> 是一个插件，执行 <code>fastlane add_plugin firim</code> 即可把插件装好</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>fastlane里面内置很多常用的Action，具体的使用方法建议多看一下官方文档。</p>
+<p>fastlane项目里面也有很多其他公司的 <a href="https://github.com/fastlane/examples" target="_blank" rel="noopener">例子</a>，在不清楚怎么使用的时候，看看这些例子也未尝不是一种方法。 </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Fastlane/" rel="tag"># Fastlane</a>
+          
+            <a href="/tags/自动构建/" rel="tag"># 自动构建</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/22/2017and2018/" rel="next" title="2017与2018">
+                <i class="fa fa-chevron-left"></i> 2017与2018
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/10/ios-continuous-build-2/" rel="prev" title="iOS持续集成（二）——证书管理神器match">
+                iOS持续集成（二）——证书管理神器match <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ChenJz</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#开篇"><span class="nav-number">1.</span> <span class="nav-text">开篇</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Fastlane"><span class="nav-number">2.</span> <span class="nav-text">Fastlane</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装"><span class="nav-number">3.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基本介绍"><span class="nav-number">4.</span> <span class="nav-text">基本介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Appfile"><span class="nav-number">5.</span> <span class="nav-text">Appfile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FastFile"><span class="nav-number">6.</span> <span class="nav-text">FastFile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实践"><span class="nav-number">7.</span> <span class="nav-text">实践</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">7.1.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ChenJz</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
