@@ -231,6 +231,180 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/27/iglist-kit-diff/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ChenJz">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CJZ's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/11/27/iglist-kit-diff/" itemprop="url">IGList Diff算法</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-27T11:45:41+08:00">
+                2020-11-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/算法/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="名词作用解释"><a href="#名词作用解释" class="headerlink" title="名词作用解释"></a>名词作用解释</h2><ul>
+<li><code>IGListEntry</code>： 用于记录数据在新数组和老数组出现的情况</li>
+<li><code>table</code> ：存放所有的 Entry，key-value</li>
+<li><code>newResultsArray</code> ：存到new数据的元素 Entry</li>
+<li><code>oldResultsArray</code> ：存到old数据的元素 Entry</li>
+<li><code>newArry</code> 存放着原始新数据的array</li>
+<li><code>oldArry</code> 存放着原始老数据的array</li>
+</ul>
+<h2 id="Entry类"><a href="#Entry类" class="headerlink" title="Entry类"></a>Entry类</h2><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> IGListEntry &#123;</span><br><span class="line">    <span class="comment">/// 在OldArray出现的次数</span></span><br><span class="line">    <span class="built_in">NSInteger</span> oldCounter = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">/// 在NewArray出现的次数</span></span><br><span class="line">    <span class="built_in">NSInteger</span> newCounter = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">/// 在OldIndex的位置，如果是遍新newArray的话，会往这个栈添加NSNotFound</span></span><br><span class="line">    stack&lt;<span class="built_in">NSInteger</span>&gt; oldIndexes;</span><br><span class="line">    <span class="comment">/// 标志是否要更新</span></span><br><span class="line">    <span class="built_in">BOOL</span> updated = <span class="literal">NO</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><h3 id="第一步"><a href="#第一步" class="headerlink" title="第一步"></a>第一步</h3><p>遍历 <code>newArry</code>，创建 newResultsArray 里面存放着 IGListRecord，每个元素的newCounter大于0，并向oldIndexs栈添加<code>NSNotFound</code></p>
+<figure class="highlight haxe"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">vector&lt;IGListRecord&gt; <span class="keyword">new</span><span class="type">ResultsArray</span>(<span class="keyword">new</span><span class="type">Count</span>);</span><br><span class="line"><span class="keyword">for</span> (NSInteger i = <span class="number">0</span>; i &lt; <span class="keyword">new</span><span class="type">Count</span>; i++) &#123;</span><br><span class="line">    id&lt;NSObject&gt; key = IGListTableKey(<span class="keyword">new</span><span class="type">Array</span>[i]);</span><br><span class="line">    IGListEntry &amp;entry = table[key];</span><br><span class="line">    entry.<span class="keyword">new</span><span class="type">Counter</span>++;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// add NSNotFound for each occurence of the item in the new array</span></span><br><span class="line">    entry.oldIndexes.push(NSNotFound);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// note: the entry is just a pointer to the entry which is stack-allocated in the table</span></span><br><span class="line">    <span class="keyword">new</span><span class="type">ResultsArray</span>[i].entry = &amp;entry;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="第二步："><a href="#第二步：" class="headerlink" title="第二步："></a>第二步：</h3><p>遍历 oldArray，创建 oldResultsArray 里面存放着 IGListRecord，每个元素的 oldCounter大于0，并且oldIndexs的top为<br>当前元素在oldArray的index<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">vector<span class="params">&lt;IGListRecord&gt;</span> oldResultsArray(oldCount);</span><br><span class="line">   for (NSInteger i = oldCount - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">       id<span class="params">&lt;NSObject&gt;</span> key = IGListTableKey(oldArray[i]);</span><br><span class="line">       IGListEntry <span class="variable">&amp;entry</span> = table[key];</span><br><span class="line">       entry.oldCounter++;</span><br><span class="line"></span><br><span class="line">       <span class="comment">// push the original indices where the item occurred onto the index stack</span></span><br><span class="line">       entry.oldIndexes.push(i);</span><br><span class="line"></span><br><span class="line">       <span class="comment">// note: the entry is just a pointer to the entry which is stack-allocated in the table</span></span><br><span class="line">       oldResultsArray[i].entry = <span class="variable">&amp;entry</span>;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="第三步"><a href="#第三步" class="headerlink" title="第三步"></a>第三步</h3><ol>
+<li>遍历 newResultArray</li>
+<li>如果当前 oldIndexes pop出来的位置是小于oldCount的话，即表示该元素在oldArray也存在。</li>
+<li>分别从 newArray[i] (注：这是原始数据，并不是上面的newResultArray) 和oldArray[originalIndex] (同样) 取出元素。进行 diff 比较，如果两个不等，设置 updated = YES</li>
+<li>如果 newCount 和 oldCount 且 originalIndex != NSNotFound (为什么第三步不用这个来判断？？)。设置 newResultArray和 oldResultArray 里面的 Record 的 index 互为对方的位置;</li>
+</ol>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="built_in">NSInteger</span> i = <span class="number">0</span>; i &lt; newCount; i++) &#123;</span><br><span class="line">        IGListEntry *entry = newResultsArray[i].entry;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// grab and pop the top original index. if the item was inserted this will be NSNotFound</span></span><br><span class="line">        <span class="built_in">NSCAssert</span>(!entry-&gt;oldIndexes.empty(), <span class="string">@"Old indexes is empty while iterating new item %li. Should have NSNotFound"</span>, (<span class="keyword">long</span>)i);</span><br><span class="line">        <span class="keyword">const</span> <span class="built_in">NSInteger</span> originalIndex = entry-&gt;oldIndexes.top();</span><br><span class="line">        entry-&gt;oldIndexes.pop();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (originalIndex &lt; oldCount) &#123;</span><br><span class="line">            <span class="keyword">const</span> <span class="keyword">id</span>&lt;IGListDiffable&gt; n = newArray[i];</span><br><span class="line">            <span class="keyword">const</span> <span class="keyword">id</span>&lt;IGListDiffable&gt; o = oldArray[originalIndex];</span><br><span class="line">            <span class="keyword">switch</span> (option) &#123;</span><br><span class="line">                <span class="keyword">case</span> IGListDiffPointerPersonality:</span><br><span class="line">                    <span class="comment">// flag the entry as updated if the pointers are not the same</span></span><br><span class="line">                    <span class="keyword">if</span> (n != o) &#123;</span><br><span class="line">                        entry-&gt;updated = <span class="literal">YES</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">case</span> IGListDiffEquality:</span><br><span class="line">                    <span class="comment">// use -[IGListDiffable isEqualToDiffableObject:] between both version of data to see if anything has changed</span></span><br><span class="line">                    <span class="comment">// skip the equality check if both indexes point to the same object</span></span><br><span class="line">                    <span class="keyword">if</span> (n != o &amp;&amp; ![n isEqualToDiffableObject:o]) &#123;</span><br><span class="line">                        entry-&gt;updated = <span class="literal">YES</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (originalIndex != <span class="built_in">NSNotFound</span></span><br><span class="line">            &amp;&amp; entry-&gt;newCounter &gt; <span class="number">0</span></span><br><span class="line">            &amp;&amp; entry-&gt;oldCounter &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// if an item occurs in the new and old array, it is unique</span></span><br><span class="line">            <span class="comment">// assign the index of new and old records to the opposite index (reverse lookup)</span></span><br><span class="line">            newResultsArray[i].index = originalIndex;</span><br><span class="line">            oldResultsArray[originalIndex].index = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="处理Delete的数据"><a href="#处理Delete的数据" class="headerlink" title="处理Delete的数据"></a>处理Delete的数据</h3><p>遍历 <code>oldResultArray</code> ，index 为<code>NSNotFound</code>设置为删除</p>
+<figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">for (<span class="name">NSInteger</span> i = <span class="number">0</span><span class="comment">; i &lt; oldCount; i++) &#123;</span></span><br><span class="line">    deleteOffsets[i] = runningOffset<span class="comment">;</span></span><br><span class="line">    const IGListRecord record = oldResultsArray[i]<span class="comment">;</span></span><br><span class="line">    // if the record index in the new array doesn't exist, its a delete</span><br><span class="line">    if (<span class="name">record</span>.index == NSNotFound) &#123;</span><br><span class="line">        addIndexToCollection(<span class="name">returnIndexPaths</span>, mDeletes, fromSection, i)<span class="comment">;</span></span><br><span class="line">        runningOffset++<span class="comment">;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    addIndexToMap(<span class="name">returnIndexPaths</span>, fromSection, i, oldArray[i], oldMap)<span class="comment">;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>offset的示意图(橙色表示会被删除）</p>
+<p><img src="http://note.youdao.com/yws/res/12408/931E6B2D7CCF4DC286CBCEC7B697BACF" alt="image"></p>
+<h3 id="Insert、Update、Move处理"><a href="#Insert、Update、Move处理" class="headerlink" title="Insert、Update、Move处理"></a>Insert、Update、Move处理</h3><h4 id="添加判断逻辑"><a href="#添加判断逻辑" class="headerlink" title="添加判断逻辑"></a>添加判断逻辑</h4><p>在newResultArray 中，代码的判断 record.index == NSNotFound ，那就属于要被添加进去的</p>
+<h4 id="更新判断逻辑"><a href="#更新判断逻辑" class="headerlink" title="更新判断逻辑"></a>更新判断逻辑</h4><p>同样看下面代码，之前设置了update直接添加到update结果里面就行了。</p>
+<h4 id="移动的判断逻辑："><a href="#移动的判断逻辑：" class="headerlink" title="移动的判断逻辑："></a>移动的判断逻辑：</h4><p>在上面会记录了删除后和插入后的偏移位置，如果  oldIndex - deleteOffset + insertOffset 计算后和当前的位置是一样的，就表示不用移动。就好比：[“1”, “2”, “3”] =&gt; [“”2, “3”]，2的这个位置在新数组里面是 0 ，他的oldIndex = 1, deleteOffset也是1，经过删除后，就是0，即不用移动。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="built_in">NSInteger</span> i = <span class="number">0</span>; i &lt; newCount; i++) &#123;</span><br><span class="line">        insertOffsets[i] = runningOffset;</span><br><span class="line">        <span class="keyword">const</span> IGListRecord record = newResultsArray[i];</span><br><span class="line">        <span class="keyword">const</span> <span class="built_in">NSInteger</span> oldIndex = record.index;</span><br><span class="line">        <span class="comment">// add to inserts if the opposing index is NSNotFound</span></span><br><span class="line">        <span class="keyword">if</span> (record.index == <span class="built_in">NSNotFound</span>) &#123;</span><br><span class="line">            addIndexToCollection(returnIndexPaths, mInserts, toSection, i);</span><br><span class="line">            runningOffset++;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// note that an entry can be updated /and/ moved</span></span><br><span class="line">            <span class="keyword">if</span> (record.entry-&gt;updated) &#123;</span><br><span class="line">                addIndexToCollection(returnIndexPaths, mUpdates, fromSection, oldIndex);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// calculate the offset and determine if there was a move</span></span><br><span class="line">            <span class="comment">// if the indexes match, ignore the index</span></span><br><span class="line">            <span class="keyword">const</span> <span class="built_in">NSInteger</span> insertOffset = insertOffsets[i];</span><br><span class="line">            <span class="keyword">const</span> <span class="built_in">NSInteger</span> deleteOffset = deleteOffsets[oldIndex];</span><br><span class="line">            <span class="keyword">if</span> ((oldIndex - deleteOffset + insertOffset) != i) &#123;</span><br><span class="line">                <span class="keyword">id</span> move;</span><br><span class="line">                <span class="keyword">if</span> (returnIndexPaths) &#123;</span><br><span class="line">                    <span class="built_in">NSIndexPath</span> *from = [<span class="built_in">NSIndexPath</span> indexPathForItem:oldIndex inSection:fromSection];</span><br><span class="line">                    <span class="built_in">NSIndexPath</span> *to = [<span class="built_in">NSIndexPath</span> indexPathForItem:i inSection:toSection];</span><br><span class="line">                    move = [[IGListMoveIndexPath alloc] initWithFrom:from to:to];</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    move = [[IGListMoveIndex alloc] initWithFrom:oldIndex to:i];</span><br><span class="line">                &#125;</span><br><span class="line">                [mMoves addObject:move];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        addIndexToMap(returnIndexPaths, toSection, i, newArray[i], newMap);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="最后生成结果"><a href="#最后生成结果" class="headerlink" title="最后生成结果"></a>最后生成结果</h3><p>主要把update的变成 insert和delete<br><figure class="highlight n1ql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">// convert move+<span class="keyword">update</span> <span class="keyword">to</span> <span class="keyword">delete</span>+<span class="keyword">insert</span>, respecting the <span class="keyword">from</span>/<span class="keyword">to</span> of the move</span><br><span class="line">// 遍历 又要moves和<span class="keyword">update</span>的值，（前面设置<span class="keyword">update</span>的时候是还没<span class="keyword">delete</span>和<span class="keyword">insert</span>），所以后面会有可能产生 <span class="keyword">update</span> + move</span><br><span class="line">const NSInteger moveCount = moves.<span class="built_in">count</span>;</span><br><span class="line">for (NSInteger i = moveCount - 1; i &gt;= 0; i--) &#123;</span><br><span class="line">    IGListMoveIndexPath *move = moves[i];</span><br><span class="line">    if ([filteredUpdates containsObject:move.from]) &#123;</span><br><span class="line">        [filteredMoves removeObjectAtIndex:i];</span><br><span class="line">        [filteredUpdates removeObject:move.from];</span><br><span class="line">        [deletes addObject:move.from];</span><br><span class="line">        [inserts addObject:move.to];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// iterate all new identifiers. if its <span class="keyword">index</span> <span class="keyword">is</span> updated, <span class="keyword">delete</span> <span class="keyword">from</span> the old <span class="keyword">index</span> <span class="keyword">and</span> <span class="keyword">insert</span> the new <span class="keyword">index</span></span><br><span class="line">// 同理，把从老数数的<span class="keyword">Map</span>里面，取出要更新的，变成<span class="keyword">insert</span>和<span class="keyword">delete</span></span><br><span class="line"><span class="keyword">for</span> (id&lt;NSObject&gt; <span class="keyword">key</span> <span class="keyword">in</span> [_oldIndexPathMap keyEnumerator]) &#123;</span><br><span class="line">    NSIndexPath *indexPath = [_oldIndexPathMap objectForKey:<span class="keyword">key</span>];</span><br><span class="line">    if ([filteredUpdates containsObject:indexPath]) &#123;</span><br><span class="line">        [deletes addObject:indexPath];</span><br><span class="line">        [inserts addObject:(id)[_newIndexPathMap objectForKey:key]];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h5 id="扩展阅读"><a href="#扩展阅读" class="headerlink" title="扩展阅读"></a>扩展阅读</h5><ul>
+<li>DeepDiff库（diff算法的另一种实现）</li>
+<li><a href="https://medium.com/flawless-app-stories/a-better-way-to-update-uicollectionview-data-in-swift-with-diff-framework-924db158db86" target="_blank" rel="noopener">https://medium.com/flawless-app-stories/a-better-way-to-update-uicollectionview-data-in-swift-with-diff-framework-924db158db86</a></li>
+<li><a href="https://xiaozhuanlan.com/topic/6921308745" target="_blank" rel="noopener">https://xiaozhuanlan.com/topic/6921308745</a>  Wagner–Fischer算法</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/20/monitor-main-thread/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1726,151 +1900,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/02/11/Some-About-dylib-of-Apple/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="ChenJz">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CJZ's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/02/11/Some-About-dylib-of-Apple/" itemprop="url">Some About dylib of Apple</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-02-11T11:26:34+08:00">
-                2017-02-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Apple-Soure/" itemprop="url" rel="index">
-                    <span itemprop="name">Apple Soure</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>dyld 是 the dynamic link editor 的缩写，它是苹果的动态链接器。</p>
-<p><a href="http://blog.sunnyxx.com/2014/08/30/objc-pre-main/" target="_blank" rel="noopener">iOS 程序 main 函数之前发生了什么</a></p>
-<p><a href="https://github.com/opensource-apple/dyld" target="_blank" rel="noopener">dyld in Github</a></p>
-<p><a href="http://www.cocoachina.com/ios/20160516/16273.html" target="_blank" rel="noopener">你真的了解load方法么？</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1921,7 +1950,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-count">30</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1932,7 +1961,7 @@
               
               <div class="site-state-item site-state-categories">
                 
-                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-count">8</span>
                   <span class="site-state-item-name">categories</span>
                 
               </div>
@@ -1943,7 +1972,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">tags</span>
                 
               </div>

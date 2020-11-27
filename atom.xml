@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2020-11-20T10:58:14.348Z</updated>
+  <updated>2020-11-27T04:03:54.169Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>IGList Diff算法</title>
+    <link href="http://yoursite.com/2020/11/27/iglist-kit-diff/"/>
+    <id>http://yoursite.com/2020/11/27/iglist-kit-diff/</id>
+    <published>2020-11-27T03:45:41.000Z</published>
+    <updated>2020-11-27T04:03:54.169Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+      
+    
+    </summary>
+    
+      <category term="算法" scheme="http://yoursite.com/categories/%E7%AE%97%E6%B3%95/"/>
+    
+    
+      <category term="iglist、iOS" scheme="http://yoursite.com/tags/iglist%E3%80%81iOS/"/>
+    
+  </entry>
   
   <entry>
     <title>卡顿监控笔记</title>
@@ -408,24 +431,6 @@
     
     
       <category term="自动构建" scheme="http://yoursite.com/tags/%E8%87%AA%E5%8A%A8%E6%9E%84%E5%BB%BA/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Keychain</title>
-    <link href="http://yoursite.com/2016/01/17/Keychain/"/>
-    <id>http://yoursite.com/2016/01/17/Keychain/</id>
-    <published>2016-01-17T14:27:31.000Z</published>
-    <updated>2020-11-20T02:18:01.293Z</updated>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;Keychain-介绍&quot;&gt;&lt;a href=&quot;#Keychain-介绍&quot; class=&quot;headerlink&quot; title=&quot;Keychain 介绍&quot;&gt;&lt;/a&gt;Keychain 介绍&lt;/h2&gt;&lt;p&gt;Keychain Services 是 OS X 和 iOS 都提供一种安全地存储敏感信息的工具，比如，存储用户ID，密码，和证书等。存储这些信息可以免除用户重复输入用户名和密码的过程。Keychain Services 的安全机制保证了存储这些敏感信息不会被窃取。简单说来，Keychain 就是一个安全容器。&lt;/p&gt;
-    
-    </summary>
-    
-    
-      <category term="keychain" scheme="http://yoursite.com/tags/keychain/"/>
     
   </entry>
   
